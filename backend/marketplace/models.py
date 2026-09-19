@@ -68,3 +68,21 @@ class PropertyImage(models.Model):
 
     def __str__(self):
         return f"Image for {self.property.title}"
+    
+
+class Review(models.Model):
+    booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name='review')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='authored_reviews')
+    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.booking.owner != self.author:
+            raise ValidationError("Only the guest of this booking can leave a review.")
+        if self.booking.status != Booking.Status.COMPLETED:
+            raise ValidationError("Reviews can only be left for completed bookings.")
+
+    def __str__(self):
+        return f"{self.rating} Star Review by {self.author.name}"
