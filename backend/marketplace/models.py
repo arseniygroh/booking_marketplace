@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 def user_avatars_directory_path(instance, filename):
     return f'avatars/user_{instance.id}/{filename}'
@@ -47,3 +48,10 @@ class Booking(models.Model):
         if self.check_in and self.check_out and self.check_in >= self.check_out:
             from django.core.exceptions import ValidationError
             raise ValidationError("Check-out must be after check-in")
+        
+class Amenity(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
