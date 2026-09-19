@@ -5,6 +5,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 def user_avatars_directory_path(instance, filename):
     return f'avatars/user_{instance.id}/{filename}'
 
+def property_image_upload_path(instance, filename):
+    return f'properties/property_{instance.property.id}/{filename}'
 
 class User(AbstractUser):    
     is_host = models.BooleanField(default=False)
@@ -12,6 +14,13 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+    
+class Amenity(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
 
 class Property(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='properties')
@@ -21,6 +30,7 @@ class Property(models.Model):
     price = models.DecimalField(max_digits=6, decimal_places=2)
     max_guests = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
+    amenities = models.ManyToManyField(Amenity, related_name='properties', blank=True)
 
     def __str__(self):
         return self.title
@@ -49,9 +59,12 @@ class Booking(models.Model):
             from django.core.exceptions import ValidationError
             raise ValidationError("Check-out must be after check-in")
         
-class Amenity(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    description = models.CharField(max_length=255, blank=True, null=True)
+
+class PropertyImage(models.Model):
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to=property_image_upload_path)
+    is_primary = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.name
+        return f"Image for {self.property.title}"
