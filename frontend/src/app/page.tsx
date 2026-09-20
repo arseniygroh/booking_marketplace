@@ -1,23 +1,7 @@
 "use client"
 import Image from "next/image";
+import { Property } from "../../types";
 import { useEffect, useState } from "react";
-
-interface User {
-  name: string;
-  email: string;
-}
-
-interface Property {
-  id: number;
-  title: string;
-  description: null | string;
-  amenities: string[] | null;
-  location: string;
-  max_guests: number;
-  primary_image: null | string;
-  price: string;
-  owner: User;
-}
 
 export default function Home() {
   const [properties, setProperties] = useState<Property[]>([]);
