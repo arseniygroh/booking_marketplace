@@ -1,10 +1,11 @@
 "use client"
 import { useState, useEffect, FormEvent } from "react";
+import { Property } from "../../../../types";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 
 export default function BookingCreationPage() {
-    const [property, setProperty] = useState<any | null>(null);
+    const [property, setProperty] = useState<Property | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -21,7 +22,7 @@ export default function BookingCreationPage() {
     useEffect(() => {
         async function getProperty() {
           try {
-            const res = await fetch(`http://127.0.0.1:8000/properties/${params.propertyId}/`);
+            const res = await fetch(`http://127.0.0.1:8000/properties/${params.id}/`);
             const data = await res.json();
             if (!res.ok) {
                 const errorMsg = res.status === 404 ? data.error : "Something went wrong fetching the property.";
@@ -34,10 +35,10 @@ export default function BookingCreationPage() {
             setIsLoading(false); 
           }
         }
-        if (params.propertyId) {
+        if (params.id) {
             getProperty();
         }
-    }, [params.propertyId]);
+    }, [params.id]);
 
     const handleBooking = async (e: FormEvent) => {
         e.preventDefault();
@@ -45,7 +46,7 @@ export default function BookingCreationPage() {
 
         try {
             const payload = {
-                property_id: property.id,
+                property_id: property?.id,
                 check_in: checkIn,
                 check_out: checkOut,
                 user_id: 1
@@ -106,13 +107,17 @@ export default function BookingCreationPage() {
                 </div>
                 <div>
                     <h3 className="text-2xl font-semibold mb-3">Amenities</h3>
-                    <div className="flex flex-wrap gap-2">
-                        {property.amenities.map((amenity: string, idx: number) => (
-                            <span key={idx} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">
-                                {amenity}
-                            </span>
-                        ))}
-                    </div>
+                    {property.amenities && property.amenities.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                            {property.amenities.map((amenity: string, idx: number) => (
+                                <span key={idx} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">
+                                    {amenity}
+                                </span>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-2xl text-gray-600">This property doesn't provide any amenities</div>
+                    )}
                 </div>
             </div>
             <div className="relative">

@@ -13,4 +13,5 @@ export interface Property {
     primary_image: null | string;
     price: string;
     owner: User;
+    images_urls: string[] | null;
 }

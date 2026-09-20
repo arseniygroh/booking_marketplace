@@ -1,5 +1,6 @@
 "use client"
 import Image from "next/image";
+import Link from "next/link";
 import { Property } from "../../types";
 import { useEffect, useState } from "react";
 
@@ -24,42 +25,79 @@ export default function Home() {
     getProperties();
   }, [])
 
-  if (isLoading) return <h1>Loading data...</h1>;
-  if (error) return <h1>{error}</h1>;
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <h1 className="text-2xl text-gray-500 font-semibold animate-pulse">Loading properties...</h1>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <h1 className="text-xl text-red-500 font-medium">{error}</h1>
+      </div>
+    );
+  }
 
   return (
-    <main className="p-8">
-      <h1 className="text-3xl font-bold mb-6">Available Properties</h1>
-      {properties && properties.length > 0 && (
-        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <main className="max-w-7xl mx-auto p-8">
+      <h1 className="text-4xl font-extrabold text-gray-900 mb-8 tracking-tight">
+        Explore Available Properties
+      </h1>
+      
+      {properties && properties.length > 0 ? (
+        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {properties.map(prop => (
-            <li key={prop.id} className="border rounded-lg p-4 shadow-sm">
-              {prop.primary_image && (
-                <div className="relative w-full h-48 mb-4">
-                  <Image 
-                    fill 
-                    className="object-cover rounded-md"
-                    src={prop.primary_image} 
-                    alt={prop.title} 
-                    unoptimized 
-                  />
+            <li key={prop.id} className="group">
+              <Link href={`/properties/${prop.id}`} className="block h-full bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col">
+                <div className="relative w-full h-64 overflow-hidden bg-gray-100">
+                  {prop.primary_image ? (
+                    <Image 
+                      fill 
+                      className="object-cover group-hover:scale-105 transition-transform duration-500 ease-in-out"
+                      src={prop.primary_image} 
+                      alt={prop.title} 
+                      unoptimized 
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-400">
+                      No Image Available
+                    </div>
+                  )}
                 </div>
-              )}
-              <h4 className="text-xl font-semibold">{prop.title}</h4>
-              <p className="text-gray-600 mb-2">{prop.description}</p>
-              <p className="font-medium">Located in {prop.location}</p>
-              <p className="text-sm text-gray-500">Amenities: {prop.amenities?.join(", ") || "None"}</p>
-              <p className="text-sm">Max guests: {prop.max_guests}</p>
-              <p className="font-bold text-lg mt-2">${prop.price}/night</p>
-              
-              <div className="mt-4 pt-4 border-t">
-                <h4 className="font-semibold text-sm text-gray-700">Host Contact</h4>
-                <p className="text-sm">{prop.owner.name}</p>
-                <p className="text-sm text-blue-600">{prop.owner.email}</p>
-              </div>
+                <div className="p-5 flex flex-col flex-grow">
+                  <div className="flex justify-between items-start gap-4 mb-2">
+                    <h4 className="text-lg font-bold text-gray-900 line-clamp-1">
+                      {prop.title}
+                    </h4>
+                    <span className="font-semibold text-lg text-gray-900 whitespace-nowrap">
+                      ${prop.price}
+                    </span>
+                  </div>
+                  
+                  <p className="text-sm text-gray-500 mb-3 line-clamp-2">
+                    {prop.description}
+                  </p>
+                  
+                  <div className="mt-auto space-y-2">
+                    <p className="text-sm font-medium text-gray-700">
+                      {prop.location}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Up to {prop.max_guests} guests
+                    </p>
+                  </div>
+                </div>
+              </Link>
             </li>
           ))}
         </ul>
+      ) : (
+        <div className="text-center py-20">
+          <h2 className="text-2xl text-gray-600">No properties available right now.</h2>
+        </div>
       )}
     </main>
   );

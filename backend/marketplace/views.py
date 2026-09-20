@@ -35,9 +35,9 @@ def get_properties(request):
     return JsonResponse(data, safe=False)
 
 @require_http_methods(["GET"])
-def get_property(request, propeprty_id):
+def get_property(request, id):
     try:
-        property = Property.objects.get(id=propeprty_id)
+        property = Property.objects.get(id=id)
         image_urls = [] 
 
         for img in property.images.all():
@@ -45,7 +45,7 @@ def get_property(request, propeprty_id):
                 image_urls.append(request.build_absolute_uri(img.image.url))
         
         data = {
-            "id": propeprty_id,
+            "id": id,
             "title": property.title,
             "description": property.description,
             "location": property.location,
