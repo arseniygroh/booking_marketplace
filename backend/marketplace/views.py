@@ -1,7 +1,12 @@
 from django.shortcuts import render
+import json
+from datetime import datetime
+from decimal import Decimal
+from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from .models import Property, User
+from django.views.decorators.csrf import csrf_exempt
+from .models import Property, Booking, User
 
 @require_http_methods(["GET"])
 def get_properties(request):
@@ -27,3 +32,71 @@ def get_properties(request):
         })
         
     return JsonResponse(data, safe=False)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def create_booking(request):
+    try:
+        data = json.loads(request.body)
+        property_id = data.get("property_id")
+        check_in_str = data.get("check_in")
+        check_out_str = data.get("check_out")
+        user_id = data.get("user_id")
+
+        if not all([property_id, check_in_str, check_out_str, user_id]):
+            return JsonResponse({"error": "Missing required fields"}, status=400)
+
+        check_in = datetime.strptime(check_in_str, "%Y-%m-%d").date()
+        check_out = datetime.strptime(check_out_str, "%Y-%m-%d").date()
+
+        if check_in >= check_out:
+            return JsonResponse({"error": "Check-out must be after check-in"}, status=400)
+
+        nights = (check_out - check_in).days
+
+        with transaction.atomic():
+
+            property_obj = Property.objects.select_for_update().get(id=property_id)
+            user_obj = User.objects.get(id=user_id)
+
+            has_conflicts = Booking.objects.filter(
+                property=property_obj,
+                status__in=[Booking.Status.PENDING, Booking.Status.CONFIRMED],
+                check_in__lt=check_out,
+                check_out__gt=check_in,
+            ).exists()
+
+            if has_conflicts:
+                return JsonResponse({"error": "Dates are not available for this property"}, status=409)
+
+            total_price = property_obj.price * Decimal(nights)
+
+            booking = Booking.objects.create(
+                owner=user_obj,
+                property=property_obj,
+                check_in=check_in,
+                check_out=check_out,
+                total_price=total_price,
+                status=Booking.Status.CONFIRMED
+            )
+
+            return JsonResponse({
+                "message": "Booking has been successful",
+                "booking": {
+                    "id": booking.id,
+                    "property_id": property_obj.id,
+                    "check_in": booking.check_in.isoformat(),
+                    "check_out": booking.check_out.isoformat(),
+                    "total_price": str(booking.total_price),
+                    "status": booking.status
+                }
+            }, status=201)
+
+    except Property.DoesNotExist:
+        return JsonResponse({"error": "Property not found"}, status=404)
+    except User.DoesNotExist:
+        return JsonResponse({"error": "User not found"}, status=404)
+    except ValueError:
+        return JsonResponse({"error": "Invalid date format. Expected YYYY-MM-DD"}, status=400)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
