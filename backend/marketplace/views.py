@@ -1,5 +1,6 @@
 from django.shortcuts import render
 import json
+from django.core.exceptions import ValidationError
 from datetime import datetime
 from decimal import Decimal
 from django.db import transaction
@@ -33,6 +34,35 @@ def get_properties(request):
         
     return JsonResponse(data, safe=False)
 
+@require_http_methods(["GET"])
+def get_property(request, propeprty_id):
+    try:
+        property = Property.objects.get(id=propeprty_id)
+        image_urls = [] 
+
+        for img in property.images.all():
+            if img and img.image and img.image.url:
+                image_urls.append(request.build_absolute_uri(img.image.url))
+        
+        data = {
+            "id": propeprty_id,
+            "title": property.title,
+            "description": property.description,
+            "location": property.location,
+            "price": str(property.price),
+            "max_guests": property.max_guests,
+            "amenities": [amenity.name for amenity in property.amenities.all()],
+            "images_urls": image_urls,
+            "owner": {
+                "name": property.owner.username,
+                "email": property.owner.email
+            }
+        }
+        return JsonResponse(data)
+    except Property.DoesNotExist:
+        return JsonResponse({"error": "property is not found"}, status=404)
+    
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def create_booking(request):
@@ -48,9 +78,6 @@ def create_booking(request):
 
         check_in = datetime.strptime(check_in_str, "%Y-%m-%d").date()
         check_out = datetime.strptime(check_out_str, "%Y-%m-%d").date()
-
-        if check_in >= check_out:
-            return JsonResponse({"error": "Check-out must be after check-in"}, status=400)
 
         nights = (check_out - check_in).days
 
@@ -78,7 +105,7 @@ def create_booking(request):
                 check_out=check_out,
                 total_price=total_price,
                 status=Booking.Status.CONFIRMED
-            )
+            ).clean()
 
             return JsonResponse({
                 "message": "Booking has been successful",
@@ -92,6 +119,8 @@ def create_booking(request):
                 }
             }, status=201)
 
+    except ValidationError:
+        return JsonResponse({"error": "Check-out must be after check-in"}, status=400)
     except Property.DoesNotExist:
         return JsonResponse({"error": "Property not found"}, status=404)
     except User.DoesNotExist:
