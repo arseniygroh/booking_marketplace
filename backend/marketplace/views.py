@@ -98,14 +98,16 @@ def create_booking(request):
 
             total_price = property_obj.price * Decimal(nights)
 
-            booking = Booking.objects.create(
+            booking = Booking(
                 owner=user_obj,
                 property=property_obj,
                 check_in=check_in,
                 check_out=check_out,
                 total_price=total_price,
                 status=Booking.Status.CONFIRMED
-            ).clean()
+            )
+            booking.clean() 
+            booking.save()
 
             return JsonResponse({
                 "message": "Booking has been successful",
