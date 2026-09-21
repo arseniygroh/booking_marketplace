@@ -1,7 +1,7 @@
 "use client"
 import Image from "next/image";
 import Link from "next/link";
-import { Property } from "../../types";
+import { Property } from "../types";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -19,7 +19,7 @@ export default function Home() {
       } catch (e: any) {
         setError(e.message);
       } finally {
-        setIsLoading(false); 
+        setIsLoading(false);
       }
     }
     getProperties();
@@ -46,7 +46,7 @@ export default function Home() {
       <h1 className="text-4xl font-extrabold text-gray-900 mb-8 tracking-tight">
         Explore Available Properties
       </h1>
-      
+
       {properties && properties.length > 0 ? (
         <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {properties.map(prop => (
@@ -54,12 +54,12 @@ export default function Home() {
               <Link href={`/properties/${prop.id}`} className="block h-full bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col">
                 <div className="relative w-full h-64 overflow-hidden bg-gray-100">
                   {prop.primary_image ? (
-                    <Image 
-                      fill 
+                    <Image
+                      fill
                       className="object-cover group-hover:scale-105 transition-transform duration-500 ease-in-out"
-                      src={prop.primary_image} 
-                      alt={prop.title} 
-                      unoptimized 
+                      src={prop.primary_image}
+                      alt={prop.title}
+                      unoptimized
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full text-gray-400">
@@ -76,11 +76,11 @@ export default function Home() {
                       ${prop.price}
                     </span>
                   </div>
-                  
+
                   <p className="text-sm text-gray-500 mb-3 line-clamp-2">
                     {prop.description}
                   </p>
-                  
+
                   <div className="mt-auto space-y-2">
                     <p className="text-sm font-medium text-gray-700">
                       {prop.location}

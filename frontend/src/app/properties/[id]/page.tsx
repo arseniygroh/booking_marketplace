@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect, FormEvent } from "react";
-import { Property } from "../../../../types";
+import { Property } from "../../../types";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 
@@ -17,23 +17,23 @@ export default function BookingCreationPage() {
         success: string | null;
     }>({ loading: false, error: null, success: null });
 
-    const params = useParams(); 
+    const params = useParams();
 
     useEffect(() => {
         async function getProperty() {
-          try {
-            const res = await fetch(`http://127.0.0.1:8000/properties/${params.id}/`);
-            const data = await res.json();
-            if (!res.ok) {
-                const errorMsg = res.status === 404 ? data.error : "Something went wrong fetching the property.";
-                throw new Error(errorMsg);
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/properties/${params.id}/`);
+                const data = await res.json();
+                if (!res.ok) {
+                    const errorMsg = res.status === 404 ? data.error : "Something went wrong fetching the property.";
+                    throw new Error(errorMsg);
+                }
+                setProperty(data);
+            } catch (e: any) {
+                setError(e.message);
+            } finally {
+                setIsLoading(false);
             }
-            setProperty(data);
-          } catch (e: any) {
-            setError(e.message);
-          } finally {
-            setIsLoading(false); 
-          }
         }
         if (params.id) {
             getProperty();
@@ -66,13 +66,13 @@ export default function BookingCreationPage() {
                 throw new Error(data.error || "Failed to create booking");
             }
 
-            setBookingStatus({ 
-                loading: false, 
-                error: null, 
-                success: `Success! Booking ID: ${data.booking.id} confirmed for $${data.booking.total_price}.` 
+            setBookingStatus({
+                loading: false,
+                error: null,
+                success: `Success! Booking ID: ${data.booking.id} confirmed for $${data.booking.total_price}.`
             });
-            
-            
+
+
             setCheckIn("");
             setCheckOut("");
 
@@ -80,7 +80,7 @@ export default function BookingCreationPage() {
             setBookingStatus({ loading: false, error: err.message, success: null });
         }
     };
-    
+
     if (isLoading) return <h1 className="p-8 text-xl">Loading data...</h1>;
     if (error) return <h1 className="p-8 text-xl text-red-500">{error}</h1>;
     if (!property) return null;
@@ -92,8 +92,8 @@ export default function BookingCreationPage() {
                 <p className="text-gray-500 text-lg">{property.location}</p>
                 {property.images_urls && property.images_urls.length > 0 && (
                     <div className="relative w-full h-[400px] rounded-xl overflow-hidden shadow-md">
-                        <Image 
-                            src={property.images_urls[0]} 
+                        <Image
+                            src={property.images_urls[0]}
                             alt={property.title}
                             fill
                             className="object-cover"
@@ -129,8 +129,8 @@ export default function BookingCreationPage() {
                     <form onSubmit={handleBooking} className="space-y-4">
                         <div className="flex flex-col space-y-2">
                             <label className="text-sm font-semibold uppercase text-gray-600">Check-In</label>
-                            <input 
-                                type="date" 
+                            <input
+                                type="date"
                                 required
                                 value={checkIn}
                                 onChange={(e) => setCheckIn(e.target.value)}
@@ -139,8 +139,8 @@ export default function BookingCreationPage() {
                         </div>
                         <div className="flex flex-col space-y-2">
                             <label className="text-sm font-semibold uppercase text-gray-600">Check-Out</label>
-                            <input 
-                                type="date" 
+                            <input
+                                type="date"
                                 required
                                 value={checkOut}
                                 onChange={(e) => setCheckOut(e.target.value)}
@@ -157,8 +157,8 @@ export default function BookingCreationPage() {
                                 {bookingStatus.success}
                             </div>
                         )}
-                        <button 
-                            type="submit" 
+                        <button
+                            type="submit"
                             disabled={bookingStatus.loading}
                             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:bg-blue-300"
                         >
