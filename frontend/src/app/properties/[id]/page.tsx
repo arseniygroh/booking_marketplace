@@ -3,6 +3,8 @@ import { useState, useEffect, FormEvent } from "react";
 import { Property } from "../../../types";
 import { useParams } from "next/navigation";
 import Image from "next/image";
+import { useSelector } from 'react-redux';
+import { RootState } from "@/store/store";
 
 export default function BookingCreationPage() {
     const [property, setProperty] = useState<Property | null>(null);
@@ -17,6 +19,7 @@ export default function BookingCreationPage() {
         success: string | null;
     }>({ loading: false, error: null, success: null });
 
+    const {user, isAuthenticated} = useSelector((state: RootState) => state.auth);
     const params = useParams();
 
     useEffect(() => {
@@ -49,7 +52,7 @@ export default function BookingCreationPage() {
                 property_id: property?.id,
                 check_in: checkIn,
                 check_out: checkOut,
-                user_id: 1
+                user_id: user?.id,
             };
 
             const res = await fetch(`http://127.0.0.1:8000/bookings/create/`, {
@@ -157,12 +160,12 @@ export default function BookingCreationPage() {
                                 {bookingStatus.success}
                             </div>
                         )}
-                        <button
-                            type="submit"
-                            disabled={bookingStatus.loading}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:bg-blue-300"
+                        <button 
+                            type='submit' 
+                            disabled={bookingStatus.loading || !isAuthenticated}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed mt-4"
                         >
-                            {bookingStatus.loading ? "Processing..." : "Reserve"}
+                            {bookingStatus.loading ? "Processing..." : (isAuthenticated ? "Reserve" : "Log in to Reserve")}
                         </button>
                     </form>
                 </div>
