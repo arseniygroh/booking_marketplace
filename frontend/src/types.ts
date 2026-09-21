@@ -1,6 +1,6 @@
 export interface User {
     id: number;
-    name: string;
+    username: string;
     email: string;
 }
 
@@ -14,7 +14,7 @@ export interface FormState {
     message: string;
     user: User | null;
 }
-  
+
 export interface Property {
     id: number;
     title: string;
