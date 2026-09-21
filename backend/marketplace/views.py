@@ -221,3 +221,16 @@ def create_booking(request):
         return JsonResponse({"error": "Invalid date format. Expected YYYY-MM-DD"}, status=400)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)   
+    
+
+@require_http_methods(["GET"])
+def get_current_user(request):
+    if request.user.is_authenticated:
+        return JsonResponse({
+            "user": {
+                "id": request.user.id,
+                "username": request.user.username,
+                "email": request.user.email
+            }
+        })
+    return JsonResponse({"error": "Not authenticated"}, status=401)
