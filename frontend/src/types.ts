@@ -26,4 +26,14 @@ export interface Property {
     price: string;
     owner: User;
     images_urls: string[] | null;
+    created_at: string;
+}
+
+export interface Booking extends Omit<Property, 'amenities' | 'owner' | 'price' | 'images_urls' | 'max_guests'> {
+    booking_id: number;
+    check_in: string;
+    check_out: string;
+    created_at: string;
+    total_price: string;
+    status: string;
 }

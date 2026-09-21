@@ -247,11 +247,12 @@ def get_user_bookings(request):
         primary_image = booking.property.images.filter(is_primary=True).first()
         image_url = primary_image.image.url if primary_image and primary_image.image else None
         data.append({
-            "id": booking.id,
-            "property_id": booking.property.id,
-            "property_title": booking.property.title,
-            "property_location": booking.property.location,
-            "property_description": booking.property.description,
+            "booking_id": booking.id,
+            "id": booking.property.id,
+            "title": booking.property.title,
+            "location": booking.property.location,
+            "description": booking.property.description,
+            "created_at": booking.created_at.isoformat(),
             "check_in": booking.check_in.isoformat(),
             "check_out": booking.check_out.isoformat(),
             "total_price": str(booking.total_price),
