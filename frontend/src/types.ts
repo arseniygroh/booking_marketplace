@@ -8,6 +8,12 @@ export interface AuthState {
     user: User | null;
     isAuthenticated: boolean;
 }
+
+export interface FormState {
+    success: boolean | null;
+    message: string;
+    user: User | null;
+}
   
 export interface Property {
     id: number;

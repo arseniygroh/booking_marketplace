@@ -1,12 +1,10 @@
 "use client";
 
-import { useActionState } from 'react';
-
-interface FormState {
-    success: boolean | null;
-    message: string;
-}
-
+import { useActionState, useEffect } from 'react';
+import { FormState } from '@/types';
+import { useDispatch } from 'react-redux';
+import { setCredentials } from '@/store/authSlice';
+import { useRouter } from 'next/navigation';
 
 async function loginAction(prevState: FormState, formData: FormData): Promise<FormState> {
     try {
@@ -31,13 +29,15 @@ async function loginAction(prevState: FormState, formData: FormData): Promise<Fo
 
         return {
             success: true,
-            message: data.message
+            message: data.message,
+            user: data.user
         };
 
     } catch (e: any) {
         return {
             success: false,
             message: e.message,
+            user: null,
         };
     }
 }
@@ -68,20 +68,31 @@ async function registerAction(prevState: FormState, formData: FormData): Promise
 
         return {
             success: true,
-            message: data.message
+            message: data.message,
+            user: data.user,
         };
     } catch (e: any) {
         return {
             success: false,
             message: e.message,
+            user: null,
         };
     }
 }
 
-const initialState: FormState = { success: null, message: "" };
+const initialState: FormState = { success: null, message: "", user: null };
 
 export default function AuthForm({ isLogin }: { isLogin: boolean }) {
     const [state, formAction, isPending] = useActionState(isLogin ? loginAction : registerAction, initialState);
+    const dispatch = useDispatch();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (state.success && state.user) {
+            dispatch(setCredentials(state.user));
+            router.push("/");
+        }
+    }, [state, dispatch, router]);
 
     return (
         <div className="w-full max-w-md mx-auto mt-12 bg-white p-8 border border-gray-200 rounded-2xl shadow-lg">
