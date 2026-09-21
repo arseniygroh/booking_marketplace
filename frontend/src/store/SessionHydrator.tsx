@@ -10,8 +10,9 @@ export function SessionHydrator({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         async function checkSession() {
             try {
-                const res = await fetch("http://127.0.0.1:8000/me/", {
+                const res = await fetch("http://localhost:8000/me/", {
                     credentials: "include", 
+                    cache: "no-store"
                 });
                 
                 if (res.ok) {

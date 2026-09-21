@@ -142,3 +142,7 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+SESSION_COOKIE_DOMAIN = 'localhost'
+CSRF_COOKIE_DOMAIN = 'localhost'
+SESSION_COOKIE_SAMESITE = 'Lax'

@@ -25,7 +25,7 @@ export default function BookingCreationPage() {
     useEffect(() => {
         async function getProperty() {
             try {
-                const res = await fetch(`http://127.0.0.1:8000/properties/${params.id}/`);
+                const res = await fetch(`http://localhost:8000/properties/${params.id}/`);
                 const data = await res.json();
                 if (!res.ok) {
                     const errorMsg = res.status === 404 ? data.error : "Something went wrong fetching the property.";
@@ -55,7 +55,7 @@ export default function BookingCreationPage() {
                 user_id: user?.id,
             };
 
-            const res = await fetch(`http://127.0.0.1:8000/bookings/create/`, {
+            const res = await fetch(`http://localhost:8000/bookings/create/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
