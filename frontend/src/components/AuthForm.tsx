@@ -19,6 +19,7 @@ async function loginAction(prevState: FormState, formData: FormData): Promise<Fo
             headers: {
                 "Content-Type": "application/json",
             },
+            credentials: "include",
             body: JSON.stringify(payload),
         });
         
@@ -55,6 +56,7 @@ async function registerAction(prevState: FormState, formData: FormData): Promise
             headers: {
                 "Content-Type": "application/json",
             },
+            credentials: "include",
             body: JSON.stringify(payload),
         });
 
