@@ -1,4 +1,3 @@
-from django.shortcuts import render
 import json
 from django.core.exceptions import ValidationError
 from datetime import datetime
@@ -7,7 +6,45 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from .models import Property, Booking, User
+from .models import Property, Booking
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth import get_user_model
+import re
+
+User = get_user_model()
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def login_view(request):
+    try:
+        user_data = json.loads(request.body)
+        email = user_data.get("email")
+        password = user_data.get("password")
+        
+        user = User.objects.get(email=email)
+
+        if not user.check_password(password):
+            return JsonResponse({"error": "Passwords don't match"}, status=401)
+        
+        login(request, user)
+        return JsonResponse({
+            "message": "Successfully logged in",
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "username": user.username
+            }
+        }, status=200)
+
+    except User.DoesNotExist:
+        return JsonResponse({"error": "User with such credentials doesn't exist"}, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON format"}, status=400)
+
+
+
+
 
 @require_http_methods(["GET"])
 def get_properties(request):
@@ -130,4 +167,4 @@ def create_booking(request):
     except ValueError:
         return JsonResponse({"error": "Invalid date format. Expected YYYY-MM-DD"}, status=400)
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        return JsonResponse({"error": str(e)}, status=500)   
