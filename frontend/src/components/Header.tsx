@@ -39,6 +39,7 @@ export default function Header() {
                 {isAuthenticated ? (
                     <div className="flex items-center gap-6">
                         <span className="font-medium text-blue-50">Welcome, {user?.username}</span>
+                        <Link className="hover:text-blue-200 transition-colors font-medium" href={"/dashboard"}>View my bookings</Link>
                         <button 
                             onClick={handleLogout} 
                             className="bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded-lg transition-colors text-sm font-semibold shadow-sm"

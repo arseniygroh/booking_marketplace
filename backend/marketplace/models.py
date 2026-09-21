@@ -37,10 +37,10 @@ class Property(models.Model):
 
 class Booking(models.Model):
     class Status(models.TextChoices):
-        PENDING = 'PE', ('Pending')
-        CONFIRMED = 'CO', ('Confirmed')
-        CANCELLED = 'CA', ('Cancelled')
-        COMPLETED = 'COM', ('Completed')
+        PENDING = 'PENDING', ('Pending')
+        CONFIRMED = 'CONFIRMED', ('Confirmed')
+        CANCELLED = 'CANCELLED', ('Cancelled')
+        COMPLETED = 'COMPLETED', ('Completed')
 
     
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings')
@@ -50,7 +50,7 @@ class Booking(models.Model):
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(
-        max_length=3,
+        max_length=10,
         choices=Status.choices,
         default=Status.PENDING,
     )
