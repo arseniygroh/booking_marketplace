@@ -60,15 +60,19 @@ def register_view(request):
         username = data.get('username')
         email = data.get('email')
         password = data.get('password')
+        confirmed_password = data.get('confirmPassword')
     
         if not username or not password or not email:
             return JsonResponse({'error': 'username, email and password are necessary'}, status=400)
 
-        if not bool(email_pattern.match(email)):
+        if not email_pattern.match(email):
             return JsonResponse({"error": 'invalid email format'}, status=400)
 
-        if not bool(password_pattern.match(password)):
+        if not password_pattern.match(password):
             return JsonResponse({"error": 'invalid password format, it must include a digit and must be at least 8 characters long'}, status=400)
+        
+        if password != confirmed_password:
+            return JsonResponse({"error": "Passwords must match"}, status=400)
 
         if User.objects.filter(email=email).exists():
             return JsonResponse({'error': 'User with such email already exists'}, status=400)
