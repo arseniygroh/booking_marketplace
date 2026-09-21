@@ -234,3 +234,29 @@ def get_current_user(request):
             }
         })
     return JsonResponse({"error": "Not authenticated"}, status=401)
+
+@require_http_methods(["GET"])
+def get_user_bookings(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+
+    bookings = Booking.objects.filter(owner=request.user).select_related('property').prefetch_related('property__images')
+    data = []
+
+    for booking in bookings:
+        primary_image = booking.property.images.filter(is_primary=True).first()
+        image_url = primary_image.image.url if primary_image and primary_image.image else None
+        data.append({
+            "id": booking.id,
+            "property_id": booking.property.id,
+            "property_title": booking.property.title,
+            "property_location": booking.property.location,
+            "property_description": booking.property.description,
+            "check_in": booking.check_in.isoformat(),
+            "check_out": booking.check_out.isoformat(),
+            "total_price": str(booking.total_price),
+            "status": booking.status,
+            "primary_image": request.build_absolute_uri(image_url) if image_url else None
+        })
+
+    return JsonResponse(data, safe=False)
