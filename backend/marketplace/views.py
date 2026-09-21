@@ -42,7 +42,12 @@ def login_view(request):
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON format"}, status=400)
 
+@csrf_exempt
+@require_http_methods(["POST"])
+def logout_view(request):
+    logout(request)
 
+    return JsonResponse({"message": "Successfully logged out"}, status=200)
 
 
 
