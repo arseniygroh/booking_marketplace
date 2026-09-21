@@ -49,6 +49,50 @@ def logout_view(request):
 
     return JsonResponse({"message": "Successfully logged out"}, status=200)
 
+@csrf_exempt
+@require_http_methods(["POST"])
+def register_view(request):
+    try:
+        email_pattern = re.compile(r"^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$", re.IGNORECASE)
+        password_pattern = re.compile(r"^(?=.*\d).{8,}$")
+
+        data = json.loads(request.body)
+        username = data.get('username')
+        email = data.get('email')
+        password = data.get('password')
+    
+        if not username or not password or not email:
+            return JsonResponse({'error': 'username, email and password are necessary'}, status=400)
+
+        if not bool(email_pattern.match(email)):
+            return JsonResponse({"error": 'invalid email format'}, status=400)
+
+        if not bool(password_pattern.match(password)):
+            return JsonResponse({"error": 'invalid password format, it must include a digit and must be at least 8 characters long'}, status=400)
+
+        if User.objects.filter(email=email).exists():
+            return JsonResponse({'error': 'User with such email already exists'}, status=400)
+            
+        try:
+            validate_password(password)
+        except ValidationError as e:
+            return JsonResponse({'error': " ".join(e.messages)}, status=400)
+        
+        user = User.objects.create_user(username=username, email=email, password=password)
+        
+        return JsonResponse({
+            'message': 'You were successfully registered!',
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email
+            }
+        }, status=201)  
+        
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON format"}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': f'Internal server error: {str(e)}'}, status=500)
 
 
 @require_http_methods(["GET"])
