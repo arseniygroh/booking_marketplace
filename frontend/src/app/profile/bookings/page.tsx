@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { Booking } from "@/types";
 import Image from "next/image";
 
-export default function DashboardPage() {
+export default function BookingsPage() {
     const { isAuthenticated } = useSelector((state: RootState) => state.auth);
     const router = useRouter();
     const [bookings, setBookings] = useState<Booking[]>([]);
