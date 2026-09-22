@@ -19,7 +19,7 @@ export default function ProfileOverviewPage() {
                     <h1 className="text-3xl font-bold text-gray-900 mb-1 max-[550px]:text-center">
                         Welcome, {user.username || "Traveler"}!
                     </h1>
-                    <p className="text-gray-500 text-lg">Manage your account and hosted properties.</p>
+                    <p className="text-gray-500 text-lg max-[550px]:text-center">Manage your account and hosted properties.</p>
                 </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
