@@ -1,6 +1,6 @@
 import json
 from django.core.exceptions import ValidationError
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from django.db import transaction
 from django.http import JsonResponse
@@ -261,3 +261,17 @@ def get_user_bookings(request):
         })
 
     return JsonResponse(data, safe=False)
+
+@require_http_methods(["GET"])
+def get_unavailable_dates(request, property_id):
+    bookings = Booking.objects.filter(property=property_id, status__in=[Booking.Status.PENDING, Booking.Status.CONFIRMED])
+
+    unavailable_dates = []
+
+    for booking in bookings:
+        current_date = booking.check_in
+        while current_date < booking.check_out:
+            unavailable_dates.append(current_date.isoformat())
+            current_date += timedelta(days=1)
+        
+    return JsonResponse({"unavailable_dates": unavailable_dates})
