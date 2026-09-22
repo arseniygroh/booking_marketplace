@@ -5,19 +5,22 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import { useSelector } from 'react-redux';
 import { RootState } from "@/store/store";
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
+import { parseISO, format } from 'date-fns'; 
 
 export default function BookingCreationPage() {
     const [property, setProperty] = useState<Property | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-
-    const [checkIn, setCheckIn] = useState("");
-    const [checkOut, setCheckOut] = useState("");
+    const [checkIn, setCheckIn] = useState<Date | null>(null);
+    const [checkOut, setCheckOut] = useState<Date | null>(null);
     const [bookingStatus, setBookingStatus] = useState<{
         loading: boolean;
         error: string | null;
         success: string | null;
     }>({ loading: false, error: null, success: null });
+    const [unavailableDates, setUnavailableDates] = useState<Date[]>([]);
 
     const {user, isAuthenticated} = useSelector((state: RootState) => state.auth);
     const params = useParams();
@@ -43,15 +46,37 @@ export default function BookingCreationPage() {
         }
     }, [params.id]);
 
+    useEffect(() => {
+        const fetchBookedDates = async () => {
+            try {
+                const res = await fetch(`http://localhost:8000/properties/${params.id}/booked-dates/`);
+                if (res.ok) {
+                    const data = await res.json();
+                    const blockedDates = data.unavailable_dates.map((dateStr: string) => parseISO(dateStr));
+                    setUnavailableDates(blockedDates);
+                }
+            } catch (error) {
+                console.error("Failed to load booked dates");
+            }
+        };
+        fetchBookedDates();
+    }, [params.id]);
+
     const handleBooking = async (e: FormEvent) => {
         e.preventDefault();
+        
+        if (!checkIn || !checkOut) {
+            setBookingStatus({ loading: false, error: "Please select both check-in and check-out dates.", success: null });
+            return;
+        }
         setBookingStatus({ loading: true, error: null, success: null });
 
         try {
+            
             const payload = {
                 property_id: property?.id,
-                check_in: checkIn,
-                check_out: checkOut,
+                check_in: format(checkIn, 'yyyy-MM-dd'),
+                check_out: format(checkOut, 'yyyy-MM-dd'),
                 user_id: user?.id,
             };
 
@@ -60,6 +85,7 @@ export default function BookingCreationPage() {
                 headers: {
                     "Content-Type": "application/json",
                 },
+                credentials: "include", 
                 body: JSON.stringify(payload),
             });
 
@@ -75,9 +101,8 @@ export default function BookingCreationPage() {
                 success: `Success! Booking ID: ${data.booking.id} confirmed for $${data.booking.total_price}.`
             });
 
-
-            setCheckIn("");
-            setCheckOut("");
+            setCheckIn(null);
+            setCheckOut(null);
 
         } catch (err: any) {
             setBookingStatus({ loading: false, error: err.message, success: null });
@@ -130,25 +155,35 @@ export default function BookingCreationPage() {
                         <span className="text-gray-500"> / night</span>
                     </div>
                     <form onSubmit={handleBooking} className="space-y-4">
-                        <div className="flex flex-col space-y-2">
-                            <label className="text-sm font-semibold uppercase text-gray-600">Check-In</label>
-                            <input
-                                type="date"
-                                required
-                                value={checkIn}
-                                onChange={(e) => setCheckIn(e.target.value)}
-                                className="border rounded-md p-2"
-                            />
-                        </div>
-                        <div className="flex flex-col space-y-2">
-                            <label className="text-sm font-semibold uppercase text-gray-600">Check-Out</label>
-                            <input
-                                type="date"
-                                required
-                                value={checkOut}
-                                onChange={(e) => setCheckOut(e.target.value)}
-                                className="border rounded-md p-2"
-                            />
+                        <div className="flex gap-4 mb-4">
+                            <div className="w-1/2">
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Check-in</label>
+                                <DatePicker
+                                    selected={checkIn}
+                                    onChange={(date: Date | null) => setCheckIn(date)}
+                                    excludeDates={unavailableDates}
+                                    minDate={new Date()}
+                                    selectsStart
+                                    startDate={checkIn}
+                                    endDate={checkOut}
+                                    placeholderText="Select date"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none"
+                                />
+                            </div>
+                            <div className="w-1/2">
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Check-out</label>
+                                <DatePicker
+                                    selected={checkOut}
+                                    onChange={(date: Date | null) => setCheckOut(date)}
+                                    excludeDates={unavailableDates}
+                                    minDate={checkIn || new Date()} 
+                                    selectsEnd
+                                    startDate={checkIn}
+                                    endDate={checkOut}
+                                    placeholderText="Select date"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none"
+                                />
+                            </div>
                         </div>
                         {bookingStatus.error && (
                             <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
