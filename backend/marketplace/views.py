@@ -275,3 +275,33 @@ def get_unavailable_dates(request, property_id):
             current_date += timedelta(days=1)
         
     return JsonResponse({"unavailable_dates": unavailable_dates})
+
+@require_http_methods(["GET"])
+def get_my_properties(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+
+    properties = Property.objects.filter(owner=request.user).prefetch_related('amenities', 'images')
+    data = []
+
+    for prop in properties:
+        image_urls = [] 
+
+        for img in prop.images.all():
+            if img and img.image and img.image.url:
+                image_urls.append(request.build_absolute_uri(img.image.url))
+                                
+        data.append({
+            "id": prop.id,
+            "title": prop.title,
+            "description": prop.description,
+            "location": prop.location,
+            "created_at": prop.created_at.isoformat(),
+            "price": str(prop.price),
+            "max_guests": prop.max_guests,
+            "amenities": [amenity.name for amenity in prop.amenities.all()],
+            "images_urls": image_urls,
+            "primary_image": image_urls[0] if image_urls else None,
+        })
+
+    return JsonResponse(data, safe=False)
