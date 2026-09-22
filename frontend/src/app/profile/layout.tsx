@@ -3,8 +3,8 @@ import { ReactNode } from "react";
 
 export default function ProfileLayout({ children }: { children: ReactNode }) {
     return (
-        <div className="min-h-[calc(100vh-72px)] bg-gray-50 flex flex-col md:flex-row">
-            <aside className="w-full md:w-64 bg-white border-r border-gray-200 flex-shrink-0 md:min-h-[calc(100vh-72px)]">
+        <div className="min-h-[calc(100vh-72px)] bg-gray-50 flex flex-col min-lg:flex-row">
+            <aside className="w-full min-lg:w-64 bg-white border-r border-gray-200 flex-shrink-0 min-lg:min-h-[calc(100vh-72px)]">
                 <div className="p-6">
                     <h2 className="text-xl font-bold text-gray-900 mb-6 tracking-tight">Personal Cabinet</h2>
                     <nav className="flex flex-col gap-2">
