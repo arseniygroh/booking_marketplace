@@ -6,7 +6,7 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from .models import Property, Booking
+from .models import Property, Booking, PropertyImage
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
@@ -305,3 +305,41 @@ def get_my_properties(request):
         })
 
     return JsonResponse(data, safe=False)
+
+@require_http_methods(["POST"])
+def create_property(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+    
+    title = request.POST.get("title")
+    description = request.POST.get('description')
+    location = request.POST.get('location')
+    price = request.POST.get('price')
+    max_guests = request.POST.get('max_guests')
+    amenities_data = request.POST.getlist('amenities') 
+    primary_image_index = int(request.POST.get('primary_image_index', 0))
+    new_property = Property.objects.create(
+        owner=request.user,
+        title=title,
+        description=description,
+        location=location,
+        price=price,
+        max_guests=max_guests
+    )
+
+    if amenities_data:
+        new_property.amenities.add(amenities_data)
+    
+    images = request.FILES.getlist('images')
+    for index, image_file in enumerate(images):
+        is_primary = index == primary_image_index
+        PropertyImage.objects.create(
+            property=new_property,
+            image=image_file,
+            is_primary=is_primary
+        )
+
+    return JsonResponse({
+        "message": "Property created successfully!",
+        "property_id": new_property.id
+    }, status=201)
