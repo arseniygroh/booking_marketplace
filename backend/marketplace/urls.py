@@ -12,5 +12,6 @@ urlpatterns = [
     path('bookings/my/', views.get_user_bookings),
     path('properties/<int:property_id>/booked-dates/', views.get_unavailable_dates),
     path('properties/my/', views.get_my_properties),
+    path('amenities/', views.get_available_amenities),
     path('properties/create/', views.create_property),
 ]

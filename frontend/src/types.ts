@@ -37,3 +37,14 @@ export interface Booking extends Omit<Property, 'amenities' | 'owner' | 'price' 
     total_price: string;
     status: string;
 }
+
+export interface Amenity {
+    id: number;
+    name: string;
+    description: string | null;
+}
+
+export interface ImageSelection {
+    file: File;
+    previewUrl: string;
+}

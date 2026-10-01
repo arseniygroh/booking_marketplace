@@ -6,7 +6,7 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from .models import Property, Booking, PropertyImage
+from .models import Property, Booking, PropertyImage, Amenity
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
@@ -306,6 +306,12 @@ def get_my_properties(request):
 
     return JsonResponse(data, safe=False)
 
+@require_http_methods(["GET"])
+def get_available_amenities(request):
+    amenities = Amenity.objects.all()
+    return JsonResponse([{"id": amenity.id, "name": amenity.name, "description": amenity.description} for amenity in amenities], safe=False)
+
+@csrf_exempt
 @require_http_methods(["POST"])
 def create_property(request):
     if not request.user.is_authenticated:
@@ -328,7 +334,12 @@ def create_property(request):
     )
 
     if amenities_data:
-        new_property.amenities.add(amenities_data)
+        for amenity_id in amenities_data:
+            try:
+                amenity = Amenity.objects.get(id=amenity_id)
+                new_property.amenities.add(amenity)
+            except Amenity.DoesNotExist:
+                continue
     
     images = request.FILES.getlist('images')
     for index, image_file in enumerate(images):
