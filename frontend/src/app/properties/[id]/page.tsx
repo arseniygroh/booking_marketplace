@@ -138,14 +138,35 @@ export default function BookingCreationPage() {
                     {property.amenities && property.amenities.length > 0 ? (
                         <div className="flex flex-wrap gap-2">
                             {property.amenities.map((amenity: string, idx: number) => (
-                                <span key={idx} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">
+                                <span key={idx} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">
                                     {amenity}
                                 </span>
                             ))}
                         </div>
                     ) : (
-                        <div className="text-2xl text-gray-600">This property doesn't provide any amenities</div>
+                        <div className="text-gray-500 italic">This property doesn't have any listed amenities yet.</div>
                     )}
+                </div>
+                <div className="border-t border-gray-200 mt-8 pt-6 space-y-4">
+                    <div>
+                        <h3 className="text-lg font-semibold text-gray-900">Guest Capacity</h3>
+                        <p className="text-gray-700">
+                            Comfortably accommodates up to <span className="font-bold text-blue-600">{property.max_guests}</span> guests.
+                        </p>
+                    </div>
+
+                    <div className="flex items-center text-sm text-gray-500 pt-4">
+                        <svg className="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span>
+                            Listed on {new Date(property.created_at).toLocaleDateString('en-US', { 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric' 
+                            })}
+                        </span>
+                    </div>
                 </div>
             </div>
             <div className="relative">

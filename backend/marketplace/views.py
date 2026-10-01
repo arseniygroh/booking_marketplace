@@ -140,6 +140,7 @@ def get_property(request, id):
             "description": property.description,
             "location": property.location,
             "price": str(property.price),
+            "created_at": property.created_at.isoformat(),
             "max_guests": property.max_guests,
             "amenities": [amenity.name for amenity in property.amenities.all()],
             "images_urls": image_urls,
