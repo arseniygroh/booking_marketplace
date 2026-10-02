@@ -56,3 +56,10 @@ export interface ImageSelection {
     file: File | null;
     previewUrl: string;
 }
+
+export interface ModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    title?: string;
+    children: React.ReactNode;
+}

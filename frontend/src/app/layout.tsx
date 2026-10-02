@@ -29,6 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <StoreProvider>
           <SessionHydrator>
+            <div id="root-modal"></div>
             <Header />
             {children}
           </SessionHydrator>
