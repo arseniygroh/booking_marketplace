@@ -15,4 +15,5 @@ urlpatterns = [
     path('amenities/', views.get_available_amenities),
     path('properties/create/', views.create_property),
     path('properties/<int:property_id>/update/', views.edit_property),
+    path('properties/delete/<int:property_id>/', views.delete_property),
 ]

@@ -433,3 +433,20 @@ def edit_property(request, property_id):
         first_img.save()
 
     return JsonResponse({"message": "Property updated successfully!"}, status=200)
+
+@require_http_methods(["DELETE"])
+def delete_property(request, property_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+    
+    property = Property.objects.filter(id=property_id, owner=request.user).first()
+    
+    if not property:
+        return JsonResponse({"error": "Property not found or you do not have permission to delete it"}, status=404)
+    
+    for img in property.images.all():
+        if img.image:
+            img.image.delete(save=False) 
+
+    property.delete()    
+    return JsonResponse({"message": "Property deleted successfully!"}, status=200)
