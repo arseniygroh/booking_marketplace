@@ -27,7 +27,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
             onClose();
         }
     };
-    
+
     if (typeof document === "undefined") return null;
     
     const modalRoot = document.getElementById("root-modal");
@@ -35,10 +35,10 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
 
     return createPortal((
         <dialog
-          ref={dialogRef}
-          onClose={onClose}
-          onClick={handleBackdropClick}
-          className="w-full max-w-lg p-0 rounded-2xl shadow-2xl border-0 bg-white backdrop:bg-black/60 backdrop:backdrop-blur-sm"
+            ref={dialogRef}
+            onClose={onClose}
+            onClick={handleBackdropClick}
+            className="fixed inset-0 m-auto w-full max-w-lg p-0 rounded-2xl shadow-2xl border-0 bg-white backdrop:bg-black/60 backdrop:backdrop-blur-sm"
         >
           <div className="flex flex-col w-full">
             <header className="flex items-center justify-between px-6 py-4 border-b border-gray-100">

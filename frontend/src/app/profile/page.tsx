@@ -1,12 +1,13 @@
 "use client";
 
-import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import Link from "next/link";
+import { useSelector } from "react-redux";
+
 
 export default function ProfileOverviewPage() {
     const {user} = useSelector((state: RootState) => state.auth);
-
+    
     if (!user) return null;
 
     return (
