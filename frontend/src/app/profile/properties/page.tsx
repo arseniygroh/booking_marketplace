@@ -110,7 +110,7 @@ export default function PropertiesPage() {
                                 </span>
                                 {property.amenities?.slice(0, 2).map((amenity, idx) => (
                                     <span key={idx} className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-medium">
-                                        {amenity}
+                                        {amenity.name}
                                     </span>
                                 ))}
                                 {property.amenities && property.amenities.length > 2 && (
@@ -121,9 +121,9 @@ export default function PropertiesPage() {
                             </div>
             
                             <div className="mt-auto flex gap-3 pt-4 border-t border-gray-100">
-                                <button className="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-700 font-semibold py-2 rounded-lg transition-colors text-sm border border-gray-200">
+                                <Link href={`/profile/properties/edit/${property.id}`} className="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-700 font-semibold py-2 rounded-lg transition-colors text-sm border text-center border-gray-200">
                                     Edit
-                                </button>
+                                </Link>
                                 <button className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-2 rounded-lg transition-colors text-sm border border-red-100">
                                     Delete
                                 </button>

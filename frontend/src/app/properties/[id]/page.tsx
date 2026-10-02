@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect, FormEvent } from "react";
-import { Property } from "../../../types";
+import { Amenity, Property } from "../../../types";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { useSelector } from 'react-redux';
@@ -34,6 +34,7 @@ export default function BookingCreationPage() {
                     const errorMsg = res.status === 404 ? data.error : "Something went wrong fetching the property.";
                     throw new Error(errorMsg);
                 }
+                console.log(data);
                 setProperty(data);
             } catch (e: any) {
                 setError(e.message);
@@ -118,10 +119,10 @@ export default function BookingCreationPage() {
             <div className="md:col-span-2 space-y-6">
                 <h1 className="text-4xl font-bold">{property.title}</h1>
                 <p className="text-gray-500 text-lg">{property.location}</p>
-                {property.images_urls && property.images_urls.length > 0 && (
+                {property.images && property.images.length > 0 && (
                     <div className="relative w-full h-[400px] rounded-xl overflow-hidden shadow-md">
                         <Image
-                            src={property.images_urls[0]}
+                            src={property.images[property.primary_image_index ?? 0].previewUrl}
                             alt={property.title}
                             fill
                             className="object-cover"
@@ -137,9 +138,9 @@ export default function BookingCreationPage() {
                     <h3 className="text-2xl font-semibold mb-3">Amenities</h3>
                     {property.amenities && property.amenities.length > 0 ? (
                         <div className="flex flex-wrap gap-2">
-                            {property.amenities.map((amenity: string, idx: number) => (
+                            {property.amenities.map((amenity: Amenity, idx: number) => (
                                 <span key={idx} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">
-                                    {amenity}
+                                    {amenity.name}
                                 </span>
                             ))}
                         </div>

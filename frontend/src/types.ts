@@ -15,27 +15,9 @@ export interface FormState {
     user: User | null;
 }
 
-export interface Property {
+export interface PropertyImage {
     id: number;
-    title: string;
-    description: null | string;
-    amenities: string[] | null;
-    location: string;
-    max_guests: number;
-    primary_image: null | string;
-    price: string;
-    owner: User;
-    images_urls: string[] | null;
-    created_at: string;
-}
-
-export interface Booking extends Omit<Property, 'amenities' | 'owner' | 'price' | 'images_urls' | 'max_guests'> {
-    booking_id: number;
-    check_in: string;
-    check_out: string;
-    created_at: string;
-    total_price: string;
-    status: string;
+    previewUrl: string;
 }
 
 export interface Amenity {
@@ -44,7 +26,33 @@ export interface Amenity {
     description: string | null;
 }
 
+
+export interface Property {
+    id: number;
+    title: string;
+    description: null | string;
+    amenities: Amenity[] | null;
+    location: string;
+    max_guests: number;
+    primary_image: null | string;
+    price: string;
+    owner: User; 
+    images: PropertyImage[] | null;
+    primary_image_index: number | null;
+    created_at: string;
+}
+
+export interface Booking extends Omit<Property, 'amenities' | 'owner' | 'price' | 'images' | 'max_guests'> {
+    booking_id: number;
+    check_in: string;
+    check_out: string;
+    created_at: string;
+    total_price: string;
+    status: string;
+}
+
+
 export interface ImageSelection {
-    file: File;
+    file: File | null;
     previewUrl: string;
 }

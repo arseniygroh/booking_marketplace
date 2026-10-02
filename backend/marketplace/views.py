@@ -114,7 +114,7 @@ def get_properties(request):
             "location": prop.location,
             "price": str(prop.price),
             "max_guests": prop.max_guests,
-            "amenities": [amenity.name for amenity in prop.amenities.all()],
+            "amenities": [{"id": amenity.id, "name": amenity.name, "description": amenity.description} for amenity in prop.amenities.all()],
             "primary_image": request.build_absolute_uri(image_url) if image_url else None,
             "owner": {
                 "name": prop.owner.username,
@@ -128,11 +128,13 @@ def get_properties(request):
 def get_property(request, id):
     try:
         property = Property.objects.get(id=id)
-        image_urls = [] 
-
-        for img in property.images.all():
+        images = [] 
+        primary_image_index = None
+        for idx, img in enumerate(property.images.all()):
             if img and img.image and img.image.url:
-                image_urls.append(request.build_absolute_uri(img.image.url))
+                if img.is_primary:
+                    primary_image_index = idx
+                images.append({"id": img.id, "previewUrl": request.build_absolute_uri(img.image.url)})
         
         data = {
             "id": id,
@@ -142,8 +144,9 @@ def get_property(request, id):
             "price": str(property.price),
             "created_at": property.created_at.isoformat(),
             "max_guests": property.max_guests,
-            "amenities": [amenity.name for amenity in property.amenities.all()],
-            "images_urls": image_urls,
+            "amenities": [{"id": amenity.id, "name": amenity.name, "description": amenity.description} for amenity in property.amenities.all()],
+            "images": images,
+            "primary_image_index": primary_image_index,
             "owner": {
                 "name": property.owner.username,
                 "email": property.owner.email
@@ -287,7 +290,6 @@ def get_my_properties(request):
 
     for prop in properties:
         image_urls = [] 
-
         for img in prop.images.all():
             if img and img.image and img.image.url:
                 image_urls.append(request.build_absolute_uri(img.image.url))
@@ -300,7 +302,7 @@ def get_my_properties(request):
             "created_at": prop.created_at.isoformat(),
             "price": str(prop.price),
             "max_guests": prop.max_guests,
-            "amenities": [amenity.name for amenity in prop.amenities.all()],
+            "amenities": [{"id": amenity.id, "name": amenity.name, "description": amenity.description} for amenity in prop.amenities.all()],
             "images_urls": image_urls,
             "primary_image": image_urls[0] if image_urls else None,
         })
@@ -312,7 +314,7 @@ def get_available_amenities(request):
     amenities = Amenity.objects.all()
     return JsonResponse([{"id": amenity.id, "name": amenity.name, "description": amenity.description} for amenity in amenities], safe=False)
 
-@csrf_exempt
+
 @require_http_methods(["POST"])
 def create_property(request):
     if not request.user.is_authenticated:
@@ -322,9 +324,17 @@ def create_property(request):
     description = request.POST.get('description')
     location = request.POST.get('location')
     price = request.POST.get('price')
-    max_guests = request.POST.get('max_guests')
     amenities_data = request.POST.getlist('amenities') 
-    primary_image_index = int(request.POST.get('primary_image_index', 0))
+    
+    try:
+        max_guests = int(request.POST.get('max_guests', 0))
+        primary_image_index = int(request.POST.get('primary_image_index', 0))
+    except ValueError:
+        return JsonResponse({"error": "Invalid numbers sent"}, status=400)
+
+    if not title or not location or not price or max_guests < 1:
+        return JsonResponse({"error": "Invalid data was sent"}, status=400)
+    
     new_property = Property.objects.create(
         owner=request.user,
         title=title,
@@ -335,12 +345,7 @@ def create_property(request):
     )
 
     if amenities_data:
-        for amenity_id in amenities_data:
-            try:
-                amenity = Amenity.objects.get(id=amenity_id)
-                new_property.amenities.add(amenity)
-            except Amenity.DoesNotExist:
-                continue
+        new_property.amenities.set(amenities_data)
     
     images = request.FILES.getlist('images')
     for index, image_file in enumerate(images):
@@ -355,3 +360,76 @@ def create_property(request):
         "message": "Property created successfully!",
         "property_id": new_property.id
     }, status=201)
+
+
+@require_http_methods(["POST"])
+def edit_property(request, property_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+    
+    property = Property.objects.filter(id=property_id, owner=request.user).first()
+    if not property:
+        return JsonResponse({"error": "Property not found or you do not have permission to edit it"}, status=404)
+    
+    title = request.POST.get("title")
+    description = request.POST.get('description')
+    location = request.POST.get('location')
+    price = request.POST.get('price')
+    
+    try:
+        max_guests = int(request.POST.get('max_guests', 0))
+    except ValueError:
+        max_guests = 0
+
+    if not title or not location or not price or max_guests < 1:
+        return JsonResponse({"error": "Invalid data was sent"}, status=400)
+    
+    property.title = title
+    property.description = description
+    property.location = location
+    property.price = price
+    property.max_guests = max_guests
+    property.save()
+
+    amenities_data = request.POST.getlist('amenities') 
+    if amenities_data:
+        property.amenities.set(amenities_data)
+    else:
+        property.amenities.clear()
+
+    retained_image_ids = request.POST.getlist('retained_image_ids')
+    if retained_image_ids:
+        property.images.exclude(id__in=retained_image_ids).delete()
+    else:
+        property.images.all().delete()
+
+    new_images = request.FILES.getlist('images')
+    try:
+        primary_image_index = int(request.POST.get('primary_image_index', -1))
+    except ValueError:
+        primary_image_index = -1
+
+    newly_created_images = []
+    for image_file in new_images:
+        new_img = PropertyImage.objects.create(
+            property=property,
+            image=image_file,
+            is_primary=False
+        )
+        newly_created_images.append(new_img)
+
+    primary_image_id = request.POST.get('primary_image_id')
+    property.images.all().update(is_primary=False)
+
+    if primary_image_id:
+        property.images.filter(id=primary_image_id).update(is_primary=True)
+    elif primary_image_index >= 0 and primary_image_index < len(newly_created_images):
+        new_primary = newly_created_images[primary_image_index]
+        new_primary.is_primary = True
+        new_primary.save()
+    elif property.images.exists():
+        first_img = property.images.first()
+        first_img.is_primary = True
+        first_img.save()
+
+    return JsonResponse({"message": "Property updated successfully!"}, status=200)
