@@ -174,7 +174,7 @@ export default function PropertiesPage() {
                                 <p className="text-sm text-gray-500 mb-3 truncate">{property.location}</p>
                 
                                 <p className="text-gray-600 text-sm line-clamp-2 mb-4 flex-grow">
-                                    {property.description}
+                                    {property.description ? property.description : "No description provided."}
                                 </p>
                 
                                 <div className="flex flex-wrap gap-2 mb-5">

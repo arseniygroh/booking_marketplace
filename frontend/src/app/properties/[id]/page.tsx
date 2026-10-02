@@ -132,7 +132,7 @@ export default function BookingCreationPage() {
                 )}
                 <div className="prose max-w-none">
                     <h3 className="text-2xl font-semibold mt-6 mb-2">About this place</h3>
-                    <p className="text-gray-700 leading-relaxed">{property.description}</p>
+                    <p className="text-gray-700 leading-relaxed">{property.description ? property.description : "No description provided."}</p>
                 </div>
                 <div>
                     <h3 className="text-2xl font-semibold mb-3">Amenities</h3>

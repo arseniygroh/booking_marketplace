@@ -78,7 +78,7 @@ export default function Home() {
                   </div>
 
                   <p className="text-sm text-gray-500 mb-3 line-clamp-2">
-                    {prop.description}
+                    {prop.description ? prop.description : "No description provided."}
                   </p>
 
                   <div className="mt-auto space-y-2">
