@@ -448,3 +448,27 @@ def delete_property(request, property_id):
 
     property.delete()    
     return JsonResponse({"message": "Property deleted successfully!"}, status=200)
+
+@require_http_methods(["POST"])
+def cancel_booking(request, booking_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+
+    try:
+        booking = Booking.objects.get(id=booking_id, owner=request.user)
+    except Booking.DoesNotExist:
+        return JsonResponse({"error": "Booking not found"}, status=404)
+
+    if booking.status == Booking.Status.CANCELLED:
+        return JsonResponse({"error": "Booking is already cancelled"}, status=400)
+
+    today = datetime.now().date()
+    days_until = (booking.check_in - today).days
+    
+    if days_until < 1:
+        return JsonResponse({"error": "Too late to cancel, or the booking has already passed."}, status=400)
+
+    booking.status = Booking.Status.CANCELLED
+    booking.save()
+
+    return JsonResponse({"message": "Booking cancelled successfully!"}, status=200)

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Booking } from "@/types";
 import Image from "next/image";
+import getCookie from "@/cookies";
 
 export default function BookingsPage() {
     const { isAuthenticated } = useSelector((state: RootState) => state.auth);
@@ -14,7 +15,8 @@ export default function BookingsPage() {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    
+    const [isCancelling, setIsCancelling] = useState<number | null>(null);
+
     useEffect(() => {
         if (!isAuthenticated) {
             router.replace('/login');
@@ -43,7 +45,54 @@ export default function BookingsPage() {
         fetchBookings();
     }, [isAuthenticated, router]);
 
-    console.log(bookings);
+    const handleCancelBooking = async (bookingId: number) => {
+        if (!confirm("Are you sure you want to cancel this booking?")) return;
+
+        setIsCancelling(bookingId);
+        try {
+            const csrfToken = getCookie('csrftoken') || ''; 
+
+            const res = await fetch(`http://localhost:8000/bookings/${bookingId}/cancel/`, {
+                method: 'POST',
+                credentials: "include",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+            });
+            
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || 'Failed to cancel booking');
+            }
+            
+            setBookings(prevBookings => 
+                prevBookings.map(b => 
+                    b.booking_id === bookingId ? { ...b, status: 'CANCELLED' } : b
+                )
+            );
+            
+        } catch (e: any) {
+            alert(e.message);
+        } finally {
+            setIsCancelling(null);
+        }
+    };
+
+    const getStatusStyles = (status: string) => {
+        switch (status.toUpperCase()) {
+            case 'CONFIRMED':
+                return 'bg-green-100 text-green-800 ring-green-200';
+            case 'PENDING':
+                return 'bg-amber-100 text-amber-800 ring-amber-200';
+            case 'CANCELLED':
+                return 'bg-red-100 text-red-800 ring-red-200';
+            default:
+                return 'bg-gray-100 text-gray-800 ring-gray-200';
+        }
+    };
+
     if (!isAuthenticated) return null;
 
     if (loading) {
@@ -88,28 +137,18 @@ export default function BookingsPage() {
                             <div key={booking.booking_id} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col">
                                 <div className="relative w-full h-56 bg-gray-200">
                                     {booking.primary_image ? (
-                                        <Image 
-                                            fill 
-                                            src={booking.primary_image} 
-                                            alt={booking.title} 
-                                            className="object-cover"
-                                        />
+                                        <Image fill src={booking.primary_image} alt={booking.title} className="object-cover" />
                                     ) : (
-                                        <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                                            No Image Available
-                                        </div>
+                                        <div className="absolute inset-0 flex items-center justify-center text-gray-400">No Image</div>
                                     )}
-                                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold text-gray-800 uppercase tracking-wide shadow-sm">
+                                    <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide shadow-sm ring-1 ${getStatusStyles(booking.status)}`}>
                                         {booking.status}
                                     </div>
                                 </div>
+                                
                                 <div className="p-6 flex flex-col flex-grow">
-                                    <h2 className="text-xl font-bold text-gray-900 mb-1 truncate">
-                                        {booking.title}
-                                    </h2>
-                                    <p className="text-sm text-gray-500 mb-4 truncate">
-                                        {booking.location}
-                                    </p>
+                                    <h2 className="text-xl font-bold text-gray-900 mb-1 truncate">{booking.title}</h2>
+                                    <p className="text-sm text-gray-500 mb-4 truncate">{booking.location}</p>
 
                                     <div className="bg-gray-50 rounded-lg p-4 mb-6 space-y-2 border border-gray-100">
                                         <div className="flex justify-between text-sm">
@@ -125,13 +164,24 @@ export default function BookingsPage() {
                                             <span className="font-bold text-blue-600">${booking.total_price}</span>
                                         </div>
                                     </div>
-                                    <div className="mt-auto">
+                                    
+                                    <div className="mt-auto space-y-3">
                                         <Link 
                                             href={`/properties/${booking.id}`}
                                             className="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-900 font-semibold py-2.5 rounded-lg transition-colors"
                                         >
-                                            View Property Details
+                                            View Property
                                         </Link>
+
+                                        {booking.status !== 'CANCELLED' && (
+                                            <button 
+                                                onClick={() => handleCancelBooking(booking.booking_id)}
+                                                disabled={isCancelling === booking.booking_id}
+                                                className="block w-full text-center bg-white border border-red-200 hover:bg-red-50 text-red-600 font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-50"
+                                            >
+                                                {isCancelling === booking.booking_id ? "Cancelling..." : "Cancel Booking"}
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
