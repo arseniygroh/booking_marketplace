@@ -14,7 +14,7 @@ export default function BookingsPage() {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
+    
     useEffect(() => {
         if (!isAuthenticated) {
             router.replace('/login');
@@ -43,7 +43,7 @@ export default function BookingsPage() {
         fetchBookings();
     }, [isAuthenticated, router]);
 
-   
+    console.log(bookings);
     if (!isAuthenticated) return null;
 
     if (loading) {
