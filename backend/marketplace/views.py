@@ -157,7 +157,6 @@ def get_property(request, id):
         return JsonResponse({"error": "property is not found"}, status=404)
     
 
-@csrf_exempt
 @require_http_methods(["POST"])
 def create_booking(request):
     try:
@@ -165,9 +164,8 @@ def create_booking(request):
         property_id = data.get("property_id")
         check_in_str = data.get("check_in")
         check_out_str = data.get("check_out")
-        user_id = data.get("user_id")
 
-        if not all([property_id, check_in_str, check_out_str, user_id]):
+        if not all([property_id, check_in_str, check_out_str]):
             return JsonResponse({"error": "Missing required fields"}, status=400)
 
         check_in = datetime.strptime(check_in_str, "%Y-%m-%d").date()
@@ -176,9 +174,9 @@ def create_booking(request):
         nights = (check_out - check_in).days
 
         with transaction.atomic():
-
             property_obj = Property.objects.select_for_update().get(id=property_id)
-            user_obj = User.objects.get(id=user_id)
+            if request.user == property_obj.owner:
+                return JsonResponse({"error": "You cannot book your own property"}, status=403)
 
             has_conflicts = Booking.objects.filter(
                 property=property_obj,
@@ -193,7 +191,7 @@ def create_booking(request):
             total_price = property_obj.price * Decimal(nights)
 
             booking = Booking(
-                owner=user_obj,
+                owner=request.user,
                 property=property_obj,
                 check_in=check_in,
                 check_out=check_out,

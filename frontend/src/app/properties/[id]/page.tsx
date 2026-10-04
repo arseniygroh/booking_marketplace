@@ -7,7 +7,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from "@/store/store";
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
-import { parseISO, format } from 'date-fns'; 
+import { parseISO, format } from 'date-fns';
+import getCookie from "@/cookies"; 
 
 export default function BookingCreationPage() {
     const [property, setProperty] = useState<Property | null>(null);
@@ -22,7 +23,7 @@ export default function BookingCreationPage() {
     }>({ loading: false, error: null, success: null });
     const [unavailableDates, setUnavailableDates] = useState<Date[]>([]);
 
-    const {user, isAuthenticated} = useSelector((state: RootState) => state.auth);
+    const {isAuthenticated} = useSelector((state: RootState) => state.auth);
     const params = useParams();
 
     useEffect(() => {
@@ -78,13 +79,14 @@ export default function BookingCreationPage() {
                 property_id: property?.id,
                 check_in: format(checkIn, 'yyyy-MM-dd'),
                 check_out: format(checkOut, 'yyyy-MM-dd'),
-                user_id: user?.id,
             };
+            const csrfToken = getCookie('csrftoken') || '';
 
             const res = await fetch(`http://localhost:8000/bookings/create/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "X-CSRFToken": csrfToken 
                 },
                 credentials: "include", 
                 body: JSON.stringify(payload),
