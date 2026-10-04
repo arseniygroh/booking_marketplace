@@ -117,7 +117,7 @@ def get_properties(request):
             "amenities": [{"id": amenity.id, "name": amenity.name, "description": amenity.description} for amenity in prop.amenities.all()],
             "primary_image": request.build_absolute_uri(image_url) if image_url else None,
             "owner": {
-                "name": prop.owner.username,
+                "username": prop.owner.username,
                 "email": prop.owner.email
             }
         })
@@ -148,7 +148,7 @@ def get_property(request, id):
             "images": images,
             "primary_image_index": primary_image_index,
             "owner": {
-                "name": property.owner.username,
+                "username": property.owner.username,
                 "email": property.owner.email
             }
         }
@@ -196,7 +196,7 @@ def create_booking(request):
                 check_in=check_in,
                 check_out=check_out,
                 total_price=total_price,
-                status=Booking.Status.CONFIRMED
+                status=Booking.Status.PENDING
             )
             booking.clean() 
             booking.save()
