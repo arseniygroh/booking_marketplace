@@ -1,6 +1,7 @@
 import json
 from django.core.exceptions import ValidationError
 from datetime import datetime, timedelta
+from django.utils import timezone
 from decimal import Decimal
 from django.db import transaction
 from django.http import JsonResponse
@@ -472,3 +473,29 @@ def cancel_booking(request, booking_id):
     booking.save()
 
     return JsonResponse({"message": "Booking cancelled successfully!"}, status=200)
+
+def confirm_booking(request, booking_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+
+    try:
+        booking = Booking.objects.get(id=booking_id, owner=request.user)
+    except Booking.DoesNotExist:
+        return JsonResponse({"error": "Booking not found"}, status=404)
+
+    if booking.status != Booking.Status.PENDING:
+        return JsonResponse({"error": f"Booking is already {booking.status}"}, status=400)
+
+    expiration_time = booking.created_at + timedelta(minutes=5)
+    
+    if timezone.now() > expiration_time:
+        booking.status = Booking.Status.EXPIRED
+        booking.save()
+        return JsonResponse({
+            "error": "The 5-minute reservation window has expired.", 
+        }, status=400)
+    
+    booking.status = Booking.Status.CONFIRMED
+    booking.save()
+
+    return JsonResponse({"message": "Booking confirmed successfully!"}, status=200)

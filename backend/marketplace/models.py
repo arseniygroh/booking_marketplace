@@ -41,6 +41,7 @@ class Booking(models.Model):
         CONFIRMED = 'CONFIRMED', ('Confirmed')
         CANCELLED = 'CANCELLED', ('Cancelled')
         COMPLETED = 'COMPLETED', ('Completed')
+        EXPIRED = 'EXPIRED', ('Expired')
 
     
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings')
