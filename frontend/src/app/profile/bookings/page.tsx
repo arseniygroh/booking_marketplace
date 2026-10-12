@@ -80,6 +80,31 @@ export default function BookingsPage() {
         }
     };
 
+    const handleConfirmBooking = async (bookingId: number) => {
+        try {
+            const csrfToken = getCookie('csrftoken') || ''; 
+            const res = await fetch(`http://localhost:8000/bookings/${bookingId}/confirm/`, {
+                method: 'POST',
+                credentials: "include",
+                headers: {'X-CSRFToken': csrfToken},
+            });
+            
+            const data = await res.json();
+            
+            if (data.status) {
+                setBookings(prev => prev.map(b => 
+                    b.booking_id === bookingId ? { ...b, status: data.status } : b
+                ));
+            }
+    
+            if (!res.ok) throw new Error(data.error);
+            alert(data.message);
+            
+        } catch (e: any) {
+            alert(e.message);
+        }
+    };
+
     const getStatusStyles = (status: string) => {
         switch (status.toUpperCase()) {
             case 'CONFIRMED':

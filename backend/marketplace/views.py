@@ -493,9 +493,10 @@ def confirm_booking(request, booking_id):
         booking.save()
         return JsonResponse({
             "error": "The 5-minute reservation window has expired.", 
+            "status": "EXPIRED"
         }, status=400)
     
     booking.status = Booking.Status.CONFIRMED
     booking.save()
 
-    return JsonResponse({"message": "Booking confirmed successfully!"}, status=200)
+    return JsonResponse({"message": "Booking confirmed successfully!", "status": "CONFIRMED"}, status=200)
