@@ -63,3 +63,8 @@ export interface ModalProps {
     title?: string;
     children: React.ReactNode;
 }
+
+export interface BookingTimerProps {
+    createdAt: string;
+    onExpire: () => void;
+}
