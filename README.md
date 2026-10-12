@@ -24,7 +24,7 @@ A production-grade, full-stack booking platform built with a decoupled architect
 ### Booking Engine
 *   **Atomic Reservations:** Authenticated users can select check-in and check-out dates to securely reserve a property.
 *   **Data Validation:** The Django backend enforces strictly validated date logic (e.g., check-out must chronologically follow check-in) before committing to the database.
-*   **Status Tracking:** Bookings are instantiated with clear, readable states (`PENDING`, `CONFIRMED`, `CANCELLED`, `COMPLETED`).
+*   **Status Tracking:** Bookings are instantiated with clear, readable states (`PENDING`, `CONFIRMED`, `CANCELLED`, `COMPLETED`, `EXPIRED`).
 
 ### User Dashboard
 *   **"My Bookings" Portal:** A dedicated control center where users can view all their historical and upcoming reservations.
