@@ -500,3 +500,27 @@ def confirm_booking(request, booking_id):
     booking.save()
 
     return JsonResponse({"message": "Booking confirmed successfully!", "status": "CONFIRMED"}, status=200)
+
+@require_http_methods(["POST"])
+def expire_booking(request, booking_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+        
+    try:
+        booking = Booking.objects.get(id=booking_id, owner=request.user)
+    except Booking.DoesNotExist:
+        return JsonResponse({"error": "Booking not found"}, status=404)
+
+    if booking.status != Booking.Status.PENDING:
+        return JsonResponse({"error": f"Booking is already {booking.status}"}, status=400)
+    
+    expiration_time = booking.created_at + timedelta(minutes=5)
+    
+    if timezone.now() < expiration_time:
+        return JsonResponse({"error": "This booking has not expired yet on the server."}, status=400)
+    
+    booking.status = Booking.Status.EXPIRED
+    booking.save()
+        
+    return JsonResponse({"message": "Booking status changed to EXPIRED"}, status=200)
+    
