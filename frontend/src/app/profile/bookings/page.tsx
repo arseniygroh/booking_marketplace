@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Booking } from "@/types";
 import Image from "next/image";
 import getCookie from "@/cookies";
+import BookingTimer from "@/components/BookingTimer";
 
 export default function BookingsPage() {
     const { isAuthenticated } = useSelector((state: RootState) => state.auth);
@@ -105,6 +106,26 @@ export default function BookingsPage() {
         }
     };
 
+    const handleBookingExpired = async (bookingId: number) => {
+        try {
+            const csrfToken = getCookie('csrftoken') || '';
+            const res = await fetch(`http://localhost:8000/bookings/${bookingId}/expire/`, {
+                method: 'POST',
+                credentials: "include",
+                headers: {'X-CSRFToken': csrfToken},
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.error || 'Failed to expire booking');
+            }
+            setBookings(prev => prev.map(b => 
+                b.booking_id === bookingId ? { ...b, status: 'EXPIRED' } : b
+            ));
+        } catch (e: any) {
+           alert(e.message);
+        }
+    }
+
     const getStatusStyles = (status: string) => {
         switch (status.toUpperCase()) {
             case 'CONFIRMED':
@@ -191,14 +212,24 @@ export default function BookingsPage() {
                                     </div>
                                     
                                     <div className="mt-auto space-y-3">
-                                        <Link 
-                                            href={`/properties/${booking.id}`}
-                                            className="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-900 font-semibold py-2.5 rounded-lg transition-colors"
-                                        >
-                                            View Property
-                                        </Link>
-
-                                        {booking.status !== 'CANCELLED' && (
+                                        {booking.status === 'PENDING' && (
+                                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3 flex justify-between items-center">
+                                                <span className="text-sm text-amber-800 font-medium">Time to confirm:</span>
+                                                <BookingTimer 
+                                                    createdAt={booking.created_at} 
+                                                    onExpire={() => {handleBookingExpired(booking.booking_id)}} 
+                                                />
+                                            </div>
+                                        )}
+                                        {booking.status === 'PENDING' && (
+                                            <button 
+                                                onClick={() => handleConfirmBooking(booking.booking_id)}
+                                                className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg transition-colors shadow-sm"
+                                            >
+                                                Confirm Reservation
+                                            </button>
+                                        )}
+                                        {booking.status !== 'CANCELLED' && booking.status !== 'EXPIRED' && (
                                             <button 
                                                 onClick={() => handleCancelBooking(booking.booking_id)}
                                                 disabled={isCancelling === booking.booking_id}
