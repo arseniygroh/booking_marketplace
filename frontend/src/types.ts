@@ -26,7 +26,6 @@ export interface Amenity {
     description: string | null;
 }
 
-
 export interface Property {
     id: number;
     title: string;
