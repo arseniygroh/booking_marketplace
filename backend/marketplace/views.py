@@ -11,6 +11,7 @@ from .models import Property, Booking, PropertyImage, Amenity
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
+from .tasks import send_confirmation_email
 import re
 
 User = get_user_model()
@@ -474,10 +475,11 @@ def cancel_booking(request, booking_id):
 
     return JsonResponse({"message": "Booking cancelled successfully!"}, status=200)
 
+@require_http_methods(["POST"])
 def confirm_booking(request, booking_id):
     if not request.user.is_authenticated:
         return JsonResponse({"error": "Not authenticated"}, status=401)
-
+    
     try:
         booking = Booking.objects.get(id=booking_id, owner=request.user)
     except Booking.DoesNotExist:
@@ -487,19 +489,23 @@ def confirm_booking(request, booking_id):
         return JsonResponse({"error": f"Booking is already {booking.status}"}, status=400)
 
     expiration_time = booking.created_at + timedelta(minutes=5)
-    
     if timezone.now() > expiration_time:
         booking.status = Booking.Status.EXPIRED
         booking.save()
         return JsonResponse({
-            "error": "The 5-minute reservation window has expired.", 
+            "error": "The reservation window has expired.",
             "status": "EXPIRED"
         }, status=400)
-    
+
     booking.status = Booking.Status.CONFIRMED
     booking.save()
 
-    return JsonResponse({"message": "Booking confirmed successfully!", "status": "CONFIRMED"}, status=200)
+    send_confirmation_email.delay(booking.id)
+
+    return JsonResponse({
+        "message": "Booking confirmed successfully!",
+        "status": "CONFIRMED"
+    }, status=200)
 
 @require_http_methods(["POST"])
 def expire_booking(request, booking_id):
