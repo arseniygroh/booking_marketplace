@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 from pathlib import Path
+from celery.schedules import crontab
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -146,3 +147,15 @@ MAILERS = {
 SESSION_COOKIE_DOMAIN = 'localhost'
 CSRF_COOKIE_DOMAIN = 'localhost'
 SESSION_COOKIE_SAMESITE = 'Lax'
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_TIMEZONE = TIME_ZONE  
+
+
+CELERY_BEAT_SCHEDULE = {
+    'complete-past-bookings-every-midnight': {
+        'task': 'marketplace.tasks.complete_past_bookings',
+        'schedule': crontab(minute=1, hour=0),
+    },
+}
