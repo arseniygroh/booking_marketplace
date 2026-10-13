@@ -86,4 +86,4 @@ class Review(models.Model):
             raise ValidationError("Reviews can only be left for completed bookings.")
 
     def __str__(self):
-        return f"{self.rating} Star Review by {self.author.name}"
+        return f"{self.rating} Star Review by {self.author.username}"

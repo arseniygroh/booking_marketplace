@@ -240,6 +240,9 @@ export default function BookingCreationPage() {
                             </a>
                         </div>
                     </div>
+                    <div>
+                        <h3></h3>
+                    </div>
                 </div>
                 <div className="relative">
                     <div className="sticky top-8 bg-white border rounded-2xl shadow-xl p-6">

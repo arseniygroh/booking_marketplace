@@ -7,7 +7,8 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from .models import Property, Booking, PropertyImage, Amenity
+from django.db.models import Avg
+from .models import Property, Booking, PropertyImage, Amenity, Review
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
@@ -129,7 +130,7 @@ def get_properties(request):
 @require_http_methods(["GET"])
 def get_property(request, id):
     try:
-        property = Property.objects.get(id=id)
+        property = Property.objects.prefetch_related('images', 'amenities').get(id=id)
         images = [] 
         primary_image_index = None
         for idx, img in enumerate(property.images.all()):
@@ -137,7 +138,11 @@ def get_property(request, id):
                 if img.is_primary:
                     primary_image_index = idx
                 images.append({"id": img.id, "previewUrl": request.build_absolute_uri(img.image.url)})
-        
+
+        reviews = Review.objects.filter(booking__property=property).select_related('booking', 'author')
+        rating_data = reviews.aggregate(Avg('rating'))
+        average_rating = round(rating_data['rating__avg'], 1) if rating_data['rating__avg'] else None
+
         data = {
             "id": id,
             "title": property.title,
@@ -149,6 +154,9 @@ def get_property(request, id):
             "amenities": [{"id": amenity.id, "name": amenity.name, "description": amenity.description} for amenity in property.amenities.all()],
             "images": images,
             "primary_image_index": primary_image_index,
+            "average_rating": average_rating,
+            "total_reviews": reviews.count(),
+            "reviews": [{"review_id": review.id, "booking_id": review.booking.id, "rating": review.rating, "comment": review.comment, "created_at": review.created_at.isoformat(), "author": {"username": review.author.username, "email": review.author.email}} for review in reviews], 
             "owner": {
                 "username": property.owner.username,
                 "email": property.owner.email

@@ -40,6 +40,9 @@ export interface Property {
     images: PropertyImage[] | null;
     primary_image_index: number | null;
     created_at: string;
+    reviews: Review[] | null;
+    total_reviews: number;
+    average_rating: number | null;
 }
 
 export interface Booking extends Omit<Property, 'amenities' | 'owner' | 'price' | 'images' | 'max_guests'> {
@@ -49,6 +52,15 @@ export interface Booking extends Omit<Property, 'amenities' | 'owner' | 'price' 
     created_at: string;
     total_price: string;
     status: string;
+}
+
+export interface Review {
+    review_id: number;
+    booking_id: number;
+    rating: number;
+    comment: string | null;
+    created_at: string;
+    author: User;
 }
 
 
