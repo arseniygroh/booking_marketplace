@@ -538,3 +538,41 @@ def expire_booking(request, booking_id):
         
     return JsonResponse({"message": "Booking status changed to EXPIRED"}, status=200)
     
+
+@require_http_methods(["POST"])
+def submit_review(request, booking_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Please log in to leave a review."}, status=401)
+        
+    try:
+        data = json.loads(request.body)
+        rating = int(data.get('rating', 0))
+        comment = data.get('comment', '').strip()
+        
+        if not (1 <= rating <= 5):
+            return JsonResponse({"error": "Rating must be between 1 and 5."}, status=400)
+            
+        booking = Booking.objects.get(id=booking_id, owner=request.user)
+        
+        if booking.status != Booking.Status.COMPLETED:
+            return JsonResponse({"error": "You can only review completed trips."}, status=400)
+            
+        if hasattr(booking, 'review'):
+            return JsonResponse({"error": "You have already reviewed this trip."}, status=400)
+            
+        review = Review.objects.create(
+            booking=booking,
+            author=request.user,
+            rating=rating,
+            comment=comment
+        )
+        
+        return JsonResponse({
+            "message": "Review submitted successfully!",
+            "review_id": review.id
+        }, status=201)
+        
+    except Booking.DoesNotExist:
+        return JsonResponse({"error": "Booking not found."}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

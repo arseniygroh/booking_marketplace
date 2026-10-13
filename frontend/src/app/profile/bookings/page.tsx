@@ -229,7 +229,7 @@ export default function BookingsPage() {
                                                 Confirm Reservation
                                             </button>
                                         )}
-                                        {booking.status !== 'CANCELLED' && booking.status !== 'EXPIRED' && (
+                                        {!["CANCELLED", "EXPIRED", "COMPLETED"].includes(booking.status) && (
                                             <button 
                                                 onClick={() => handleCancelBooking(booking.booking_id)}
                                                 disabled={isCancelling === booking.booking_id}

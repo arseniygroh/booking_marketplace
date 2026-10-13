@@ -299,7 +299,7 @@ export default function BookingCreationPage() {
                                             ))}
                                         </div>
                                         <p className="text-gray-700 text-base leading-relaxed mt-1">
-                                            {review.comment}
+                                            {review.comment ? review.comment : "No comment provided."}
                                         </p>
                                     </div>
                                 ))}
