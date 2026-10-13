@@ -30,9 +30,9 @@ export default function ReviewForm({bookingId, propertyTitle, onSuccess}: Review
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    "credentials": "include",
                     "X-CSRFToken": csrfToken,
                 },
+                credentials: "include",
                 body: JSON.stringify({rating, comment}),
             });
 

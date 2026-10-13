@@ -1,6 +1,5 @@
 "use client";
 
-import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,14 +8,21 @@ import { Booking } from "@/types";
 import Image from "next/image";
 import getCookie from "@/cookies";
 import BookingTimer from "@/components/BookingTimer";
+import Modal from "@/components/Modal";
+import { closeModal, openModal } from "@/store/modalSlice";
+import { useDispatch, useSelector } from "react-redux";
+import ReviewForm from "@/components/ReviewForm";
 
 export default function BookingsPage() {
     const { isAuthenticated } = useSelector((state: RootState) => state.auth);
     const router = useRouter();
     const [bookings, setBookings] = useState<Booking[]>([]);
+    const [currentBooking, setCurrentBooking] = useState<Booking | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isCancelling, setIsCancelling] = useState<number | null>(null);
+    const {isOpen} = useSelector((state: RootState) => state.modal);
+    const dispatch = useDispatch();
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -160,12 +166,29 @@ export default function BookingsPage() {
     }
 
     return (
+        <>
+        <Modal isOpen={isOpen} onClose={() => {dispatch(closeModal()); setCurrentBooking(null)}}>
+            <div className="relative p-2 sm:p-4">
+            {currentBooking && (
+                <ReviewForm 
+                    propertyTitle={currentBooking.title} 
+                    bookingId={currentBooking.booking_id} 
+                    onSuccess={() => {
+                        setTimeout(() => {
+                            dispatch(closeModal());
+                            setCurrentBooking(null);
+                            router.push(`/properties/${currentBooking.id}`);
+                        }, 2000);
+                    }}
+                />
+            )}
+            </div>
+        </Modal>
         <main className="min-h-[calc(100vh-72px)] bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
                 <h1 className="text-3xl font-extrabold text-gray-900 mb-8 tracking-tight">
                     My Bookings
                 </h1>
-
                 {bookings.length === 0 ? (
                     <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-200">
                         <h3 className="text-xl font-semibold text-gray-900 mb-2">No bookings yet!</h3>
@@ -238,6 +261,22 @@ export default function BookingsPage() {
                                                 {isCancelling === booking.booking_id ? "Cancelling..." : "Cancel Booking"}
                                             </button>
                                         )}
+                                        {booking.status === 'COMPLETED' && (
+                                            <button 
+                                                onClick={() => {dispatch(openModal()); setCurrentBooking(booking)}}
+                                                className="group w-full flex items-center justify-center gap-2 bg-white border-2 border-blue-600 hover:bg-blue-50 text-blue-700 font-bold py-2.5 rounded-lg transition-all shadow-sm active:scale-[0.98]"
+                                            >
+                                                <svg 
+                                                    className="w-5 h-5 text-blue-600 group-hover:text-blue-700 transition-colors" 
+                                                    fill="none" 
+                                                    stroke="currentColor" 
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                                </svg>
+                                                Leave a Review
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -246,5 +285,6 @@ export default function BookingsPage() {
                 )}
             </div>
         </main>
+        </>
     );
 }
