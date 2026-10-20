@@ -578,3 +578,50 @@ def submit_review(request, booking_id):
         return JsonResponse({"error": "Booking not found."}, status=404)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+    
+
+@require_http_methods(["GET"])
+def get_user_profile(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        
+        profile_location = None
+        profile_bio = None
+        if hasattr(user, 'profile'):
+            profile_location = user.profile.location
+            profile_bio = user.profile.bio
+
+        avatar_url = request.build_absolute_uri(user.avatar.url) if user.avatar else None
+        
+        properties = Property.objects.filter(owner=user).prefetch_related('images', 'amenities')
+        
+        host_properties = []
+        for prop in properties:
+            primary_img = next((img for img in prop.images.all() if img.is_primary), None)
+            img_url = request.build_absolute_uri(primary_img.image.url) if primary_img and primary_img.image else None
+
+            host_properties.append({
+                "id": prop.id,
+                "title": prop.title,
+                "description": prop.description,
+                "location": prop.location,
+                "created_at": prop.created_at.isoformat(),
+                "price": str(prop.price),
+                "max_guests": prop.max_guests,
+                "amenities": [{"id": amenity.id, "name": amenity.name, "description": amenity.description} for amenity in prop.amenities.all()],
+                "primary_image": img_url,
+            })
+        
+        return JsonResponse({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "avatar": avatar_url,
+            "location": profile_location,
+            "bio": profile_bio,
+            "properties": host_properties
+        })
+
+    except User.DoesNotExist:
+        return JsonResponse({"error": "Such user doesn't exist"}, status=404)
+
