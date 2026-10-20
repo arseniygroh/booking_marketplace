@@ -13,6 +13,7 @@ export default function ProfileSettingsPage() {
     const [error, setError] = useState<string>();
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
     
     useEffect(() => {
@@ -63,6 +64,14 @@ export default function ProfileSettingsPage() {
         }
     }
 
+    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const tempUrl = URL.createObjectURL(file);
+            setPreviewUrl(tempUrl);
+        }
+    };
+
     if (isLoading) {
         return (
           <div className="flex justify-center items-center min-h-[calc(100vh-72px)] bg-gray-50">
@@ -90,9 +99,9 @@ export default function ProfileSettingsPage() {
                     <form className="p-8 sm:p-10" onSubmit={handleSubmit}>
                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-10 pb-10 border-b border-gray-100">
                             <div className="relative w-24 h-24 rounded-full overflow-hidden ring-4 ring-gray-50 shadow-sm flex-shrink-0 bg-gray-100">
-                                {currentProfile.avatar ? (
+                                {(previewUrl || currentProfile.avatar) ? (
                                     <Image 
-                                        src={currentProfile.avatar} 
+                                        src={previewUrl || currentProfile.avatar || ''} 
                                         alt={currentProfile.author.username} 
                                         fill 
                                         className="object-cover"
@@ -124,6 +133,7 @@ export default function ProfileSettingsPage() {
                                     name="avatar"
                                     accept="image/*"
                                     className="hidden" 
+                                    onChange={handleAvatarChange}
                                 />
                             </div>
                         </div>
