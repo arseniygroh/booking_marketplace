@@ -8,7 +8,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Avg
-from .models import Property, Booking, PropertyImage, Amenity, Review
+from .models import Property, Booking, PropertyImage, Amenity, Review, Profile
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
@@ -87,6 +87,8 @@ def register_view(request):
         
         user = User.objects.create_user(username=username, email=email, password=password)
         
+        Profile.objects.create(author=user)
+
         return JsonResponse({
             'message': 'You were successfully registered!',
             'user': {
