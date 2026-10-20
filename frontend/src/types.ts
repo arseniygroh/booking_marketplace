@@ -79,3 +79,11 @@ export interface BookingTimerProps {
     createdAt: string;
     onExpire: () => void;
 }
+
+export interface Profile {
+    author: User;
+    avatar: string | null;
+    location: string | null;
+    bio: string | null;
+    properties: Property[] | null;
+}

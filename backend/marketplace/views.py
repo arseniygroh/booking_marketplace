@@ -613,9 +613,11 @@ def get_user_profile(request, user_id):
             })
         
         return JsonResponse({
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
+            "author": {
+                "id": user.id,
+                "email": user.email,
+                "username": user.username
+            },
             "avatar": avatar_url,
             "location": profile_location,
             "bio": profile_bio,
