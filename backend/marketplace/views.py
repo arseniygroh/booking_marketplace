@@ -628,3 +628,27 @@ def get_user_profile(request, user_id):
     except User.DoesNotExist:
         return JsonResponse({"error": "Such user doesn't exist"}, status=404)
 
+
+@require_http_methods(["POST"])
+def edit_profile(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Please log in to change profile settings."}, status=401)
+
+    avatar = request.FILES.get('avatar')
+    location = request.POST.get('location')
+    bio = request.POST.get("bio")
+
+    if avatar:
+        request.user.avatar = avatar
+    request.user.save()
+
+    
+    profile, created = Profile.objects.get_or_create(author=request.user)
+
+    profile.location = location
+    profile.bio = bio
+    profile.save()
+
+    return JsonResponse({"status": "success", "message": "Profile updated successfully."}, status=200)
+
+

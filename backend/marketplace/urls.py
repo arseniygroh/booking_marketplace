@@ -21,4 +21,5 @@ urlpatterns = [
     path('bookings/<int:booking_id>/expire/', views.expire_booking),
     path('bookings/<int:booking_id>/review/', views.submit_review),
     path('profile/<int:user_id>/', views.get_user_profile),
+    path('profile/edit/', views.edit_profile),
 ]
