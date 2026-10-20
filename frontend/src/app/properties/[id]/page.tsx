@@ -231,19 +231,29 @@ export default function BookingCreationPage() {
                     </div>
                     <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 sm:p-8 mt-4">
                         <h3 className="text-2xl font-bold text-gray-900 mb-6">Meet your host</h3>
-                        
                         <div className="flex items-center gap-4 mb-6">
-                            <div className="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center text-white text-xl font-bold uppercase shadow-sm flex-shrink-0">
-                                {property.owner.username.charAt(0)}
+                            <div className="relative w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center text-white text-xl font-bold uppercase shadow-sm flex-shrink-0 overflow-hidden">
+                                {property.owner.avatar ? (
+                                    <Image 
+                                        src={property.owner.avatar} 
+                                        alt={property.owner.username} 
+                                        fill 
+                                        className="object-cover"
+                                        unoptimized
+                                    />
+                                ) : (
+                                    property.owner.username.charAt(0)
+                                )}
                             </div>
                             <div>
                                 <p>
-                                    <Link className="hover:text-gray-600 text-lg font-semibold text-gray-900" href={`/user/${property.owner.id}`}>{property.owner.username}</Link>
+                                    <Link className="hover:text-gray-600 text-lg font-semibold text-gray-900" href={`/user/${property.owner.id}`}>
+                                        {property.owner.username}
+                                    </Link>
                                 </p>
                                 <p className="text-sm text-gray-500">Property Owner</p>
                             </div>
                         </div>
-                        
                         <div className="pt-5 border-t border-gray-200">
                             <a 
                                 href={`mailto:${property.owner.email}`} 

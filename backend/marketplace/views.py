@@ -123,7 +123,8 @@ def get_properties(request):
             "primary_image": request.build_absolute_uri(image_url) if image_url else None,
             "owner": {
                 "username": prop.owner.username,
-                "email": prop.owner.email
+                "email": prop.owner.email,
+                "avatar": request.build_absolute_uri(prop.owner.avatar.url) if prop.owner.avatar else None
             }
         })
         
@@ -162,7 +163,8 @@ def get_property(request, id):
             "owner": {
                 "username": property.owner.username,
                 "email": property.owner.email,
-                "id": property.owner.id
+                "id": property.owner.id,
+                "avatar": request.build_absolute_uri(property.owner.avatar.url) if property.owner.avatar else None
             }
         }
         return JsonResponse(data)
