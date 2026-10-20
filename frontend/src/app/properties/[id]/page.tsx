@@ -11,6 +11,7 @@ import getCookie from "@/cookies";
 import { closeModal, openModal } from "@/store/modalSlice";
 import { useDispatch, useSelector } from "react-redux";
 import Modal from "@/components/Modal";
+import Link from "next/link";
 
 export default function BookingCreationPage() {
     const [property, setProperty] = useState<Property | null>(null);
@@ -236,7 +237,9 @@ export default function BookingCreationPage() {
                                 {property.owner.username.charAt(0)}
                             </div>
                             <div>
-                                <p className="text-lg font-semibold text-gray-900">{property.owner.username}</p>
+                                <p>
+                                    <Link className="hover:text-gray-600 text-lg font-semibold text-gray-900" href={`/user/${property.owner.id}`}>{property.owner.username}</Link>
+                                </p>
                                 <p className="text-sm text-gray-500">Property Owner</p>
                             </div>
                         </div>

@@ -161,7 +161,8 @@ def get_property(request, id):
             "reviews": [{"review_id": review.id, "booking_id": review.booking.id, "rating": review.rating, "comment": review.comment, "created_at": review.created_at.isoformat(), "author": {"username": review.author.username, "email": review.author.email}} for review in reviews], 
             "owner": {
                 "username": property.owner.username,
-                "email": property.owner.email
+                "email": property.owner.email,
+                "id": property.owner.id
             }
         }
         return JsonResponse(data)

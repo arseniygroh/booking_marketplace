@@ -45,7 +45,7 @@ export default function UserProfilePage() {
           </div>
         );
     }
-
+    
     return (
         <main className="min-h-[calc(100vh-72px)] bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10">
