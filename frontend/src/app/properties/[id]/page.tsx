@@ -12,6 +12,7 @@ import { closeModal, openModal } from "@/store/modalSlice";
 import { useDispatch, useSelector } from "react-redux";
 import Modal from "@/components/Modal";
 import Link from "next/link";
+import ImageSlider from "@/components/ImageSlider";
 
 export default function BookingCreationPage() {
     const [property, setProperty] = useState<Property | null>(null);
@@ -31,9 +32,8 @@ export default function BookingCreationPage() {
     const params = useParams();
     const dispatch = useDispatch();
     const router = useRouter();
-    console.log(property);
-    
 
+    
     useEffect(() => {
         async function getProperty() {
             try {
@@ -123,7 +123,14 @@ export default function BookingCreationPage() {
     if (isLoading) return <h1 className="p-8 text-xl">Loading data...</h1>;
     if (error) return <h1 className="p-8 text-xl text-red-500">{error}</h1>;
     if (!property) return null;
-    console.log(property);
+    const primaryIdx = property.primary_image_index ?? 0;
+
+    const sliderImages = property.images && property.images.length > 0
+        ? [
+            property.images[primaryIdx],
+            ...property.images.filter((_, i) => i !== primaryIdx)
+        ].filter(Boolean)
+        : [];
     
 
     return (
@@ -180,13 +187,9 @@ export default function BookingCreationPage() {
                         </div>
                     </div>
                     {property.images && property.images.length > 0 && (
-                        <div className="relative w-full h-[400px] rounded-xl overflow-hidden shadow-md">
-                            <Image
-                                src={property.images[property.primary_image_index ?? 0].previewUrl}
-                                alt={property.title}
-                                fill
-                                className="object-cover"
-                                unoptimized
+                        <div className="mb-8 mt-6">
+                            <ImageSlider 
+                                images={sliderImages} 
                             />
                         </div>
                     )}
