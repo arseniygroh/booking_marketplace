@@ -3,6 +3,7 @@
 import { RootState } from "@/store/store";
 import Link from "next/link";
 import { useSelector } from "react-redux";
+import Image from "next/image";
 
 
 export default function ProfileOverviewPage() {
@@ -13,8 +14,18 @@ export default function ProfileOverviewPage() {
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-10">
             <div className="flex items-center gap-6 mb-10 max-[550px]:flex-col">
-                <div className="h-24 w-24 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-4xl font-bold uppercase shadow-inner">
-                    {user.username ? user.username.charAt(0) : "U"}
+                <div className="relative h-24 w-24 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-4xl font-bold uppercase shadow-inner flex-shrink-0 overflow-hidden">
+                    {user.avatar ? (
+                        <Image 
+                            src={user.avatar} 
+                            alt={user.username || "User avatar"} 
+                            fill 
+                            className="object-cover"
+                            unoptimized
+                        />
+                    ) : (
+                        user.username ? user.username.charAt(0) : "U"
+                    )}
                 </div>
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-1 max-[550px]:text-center">
