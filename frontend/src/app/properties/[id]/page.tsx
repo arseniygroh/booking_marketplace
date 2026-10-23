@@ -31,6 +31,8 @@ export default function BookingCreationPage() {
     const params = useParams();
     const dispatch = useDispatch();
     const router = useRouter();
+    console.log(property);
+    
 
     useEffect(() => {
         async function getProperty() {
