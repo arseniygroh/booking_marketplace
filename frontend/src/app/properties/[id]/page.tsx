@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Modal from "@/components/Modal";
 import Link from "next/link";
 import ImageSlider from "@/components/ImageSlider";
+import { PropertyImage } from "../../../types";
 
 export default function BookingCreationPage() {
     const [property, setProperty] = useState<Property | null>(null);
@@ -187,11 +188,20 @@ export default function BookingCreationPage() {
                         </div>
                     </div>
                     {property.images && property.images.length > 0 && (
-                        <div className="mb-8 mt-6">
-                            <ImageSlider 
-                                images={sliderImages} 
-                            />
-                        </div>
+                        <>
+                        {sliderImages.length > 0 ? (
+                            <div className="mb-8 mt-6">
+                                <ImageSlider images={sliderImages as PropertyImage[]} />
+                            </div>
+                        ) : (
+                            <div className="mb-8 mt-6 w-full h-[300px] sm:h-[400px] md:h-[500px] bg-gray-50 rounded-2xl border border-gray-200 flex flex-col items-center justify-center text-gray-400 shadow-sm">
+                                <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <span className="font-medium text-gray-500">No images available</span>
+                            </div>
+                        )}
+                        </>
                     )}
                     <div className="prose max-w-none">
                         <h3 className="text-2xl font-semibold mb-3 text-gray-900">About this place</h3>
@@ -291,8 +301,18 @@ export default function BookingCreationPage() {
                                 {property.reviews.map((review: Review) => (
                                     <div key={review.review_id} className="flex flex-col">
                                         <div className="flex items-center gap-4 mb-3">
-                                            <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-gray-700 font-bold uppercase shadow-sm">
-                                                {review.author.username.charAt(0)}
+                                            <div className="relative w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-gray-700 text-lg font-bold uppercase shadow-sm flex-shrink-0 overflow-hidden">
+                                                {review.author.avatar ? (
+                                                    <Image 
+                                                        src={review.author.avatar} 
+                                                        alt={review.author.username} 
+                                                        fill 
+                                                        className="object-cover"
+                                                        unoptimized
+                                                    />
+                                                ) : (
+                                                    review.author.username.charAt(0)
+                                                )}
                                             </div>
                                             <div>
                                                 <h4 className="font-semibold text-gray-900">{review.author.username}</h4>

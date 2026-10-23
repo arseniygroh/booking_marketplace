@@ -159,7 +159,7 @@ def get_property(request, id):
             "primary_image_index": primary_image_index,
             "average_rating": average_rating,
             "total_reviews": reviews.count(),
-            "reviews": [{"review_id": review.id, "booking_id": review.booking.id, "rating": review.rating, "comment": review.comment, "created_at": review.created_at.isoformat(), "author": {"username": review.author.username, "email": review.author.email}} for review in reviews], 
+            "reviews": [{"review_id": review.id, "booking_id": review.booking.id, "rating": review.rating, "comment": review.comment, "created_at": review.created_at.isoformat(), "author": {"username": review.author.username, "email": review.author.email, "avatar": request.build_absolute_uri(review.author.avatar.url) if review.author.avatar else None}} for review in reviews], 
             "owner": {
                 "username": property.owner.username,
                 "email": property.owner.email,
@@ -247,7 +247,8 @@ def get_current_user(request):
             "user": {
                 "id": request.user.id,
                 "username": request.user.username,
-                "email": request.user.email
+                "email": request.user.email,
+                "avatar": request.build_absolute_uri(request.user.avatar.url) if request.user.avatar else None
             }
         })
     return JsonResponse({"error": "Not authenticated"}, status=401)
