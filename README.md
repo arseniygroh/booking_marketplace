@@ -9,28 +9,6 @@ A production-grade, full-stack booking platform built with a decoupled architect
 *   **Backend:** Python, Django, SQLite.
 *   **Authentication:** Session-based authentication relying on HTTP-only cookies (`credentials: "include"`) with strict domain matching.
 
-## Current Features
-
-### Security & Authentication
-*   **User Registration & Login:** Dedicated, centered authentication interfaces with strict form validation.
-*   **Persistent Sessions:** A custom Next.js `SessionHydrator` automatically pings a Django `/me/` endpoint on page load to restore Redux state, surviving hard browser refreshes.
-*   **Protected Routes:** Next.js router strictly guards pages like the Dashboard, seamlessly redirecting unauthenticated users to the login screen.
-*   **Authenticated API Calls:** All user-specific frontend requests carry session cookies to ensure strict data isolation on the backend.
-
-### Property Discovery
-*   **Global Feed:** A public-facing homepage that fetches and displays a grid of all available marketplace properties.
-*   **Detail Pages:** Dynamic routing (`/properties/[id]`) that displays full property specifications, descriptions, and high-quality images served directly via Django absolute URIs.
-
-### Booking Engine
-*   **Atomic Reservations:** Authenticated users can select check-in and check-out dates to securely reserve a property.
-*   **Data Validation:** The Django backend enforces strictly validated date logic (e.g., check-out must chronologically follow check-in) before committing to the database.
-*   **Status Tracking:** Bookings are instantiated with clear, readable states (`PENDING`, `CONFIRMED`, `CANCELLED`, `COMPLETED`, `EXPIRED`).
-
-### User Dashboard
-*   **"My Bookings" Portal:** A dedicated control center where users can view all their historical and upcoming reservations.
-*   **Optimized Data Pipeline:** The backend utilizes Django's `select_related` and `prefetch_related` to fetch associated property data and images in a highly efficient, N+1 safe query.
-*   **Modern UI:** Responsive Tailwind CSS cards display primary property thumbnails, exact date ranges, total price calculations, and current booking statuses, accompanied by a clean "Empty State" for new users.
-
 ## Local Development Setup
 
 ### Backend (Django)
