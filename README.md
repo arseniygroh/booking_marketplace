@@ -14,7 +14,7 @@ A production-grade, full-stack booking platform built with a decoupled architect
 ### Backend (Django)
 1. Navigate to the backend directory.
 2. Ensure the virtual environment is activated and dependencies are installed.
-3. Run database migrations to ensure the `Booking` and `Property` models are up to date:
+3. Run database migrations to ensure models are up to date:
 
 ```bash
 python manage.py migrate
