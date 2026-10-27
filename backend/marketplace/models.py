@@ -95,4 +95,38 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"Profile for {self.author.username}"
+
+class Conversation(models.Model):
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='conversations')
+    guest = models.ForeignKey(User, on_delete=models.CASCADE, related_name='guest_conversations')
+    host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='host_conversations')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['property', 'guest'], 
+                name='unique_property_guest_conversation'
+            ),
+        ]
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"Chat: {self.guest.username} & {self.host.username} ({self.property.title})"
+
+
+class Message(models.Model):
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name="messages")
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    content = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"From {self.sender.username} at {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+
     

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Review, Property, PropertyImage, User, Booking, Amenity, Profile
+from .models import Review, Property, PropertyImage, User, Booking, Amenity, Profile, Message, Conversation
 
 admin.site.register(Profile)
 admin.site.register(Review)
@@ -8,3 +8,5 @@ admin.site.register(User)
 admin.site.register(PropertyImage)
 admin.site.register(Booking)
 admin.site.register(Amenity)
+admin.site.register(Message)
+admin.site.register(Conversation)
