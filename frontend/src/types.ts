@@ -98,3 +98,50 @@ export interface MessageNotification {
     preview: string;
     created_at: string;
 }
+
+export interface InboxConversation {
+    conversation_id: number;
+    updated_at: string;
+    participant_info: {
+        id: number;
+        username: string;
+        avatar: string | null;
+        is_online: boolean;
+    };
+    property: {
+        id: number;
+        title: string;
+        primary_image: string | null;
+    };
+    preview_message: {
+        content: string;
+        created_at: string;
+        sender_id: number;
+        is_read: boolean;
+    } | null;
+    unread_count: number;
+}
+
+export interface ChatMessage {
+    id: number;
+    sender_id: number;
+    content: string;
+    created_at: string;
+    is_read: boolean;
+}
+
+export interface ConversationDetail {
+    conversation_id: number;
+    property: {
+        id: number;
+        title: string;
+        price: string;
+    };
+    participant: {
+        id: number;
+        username: string;
+        avatar: string | null;
+        is_online: boolean;
+    };
+    messages: ChatMessage[];
+}
