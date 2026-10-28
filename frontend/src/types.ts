@@ -3,6 +3,7 @@ export interface User {
     username: string;
     email: string;
     avatar: string | null;
+    is_online?: boolean;
 }
 
 export interface AuthState {

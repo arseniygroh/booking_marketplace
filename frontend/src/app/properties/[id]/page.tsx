@@ -277,42 +277,65 @@ export default function BookingCreationPage() {
                     </div>
                     <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 sm:p-8 mt-4">
                         <h3 className="text-2xl font-bold text-gray-900 mb-6">Meet your host</h3>
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="relative w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center text-white text-xl font-bold uppercase shadow-sm flex-shrink-0 overflow-hidden">
-                                {property.owner.avatar ? (
-                                    <Image 
-                                        src={property.owner.avatar} 
-                                        alt={property.owner.username} 
-                                        fill 
-                                        className="object-cover"
-                                        unoptimized
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                            <div className="flex items-center gap-4">
+                                <div className="relative">
+                                    <div className="relative w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center text-white text-xl font-bold uppercase shadow-sm flex-shrink-0 overflow-hidden">
+                                        {property.owner.avatar ? (
+                                            <Image 
+                                                src={property.owner.avatar} 
+                                                alt={property.owner.username} 
+                                                fill 
+                                                className="object-cover"
+                                                unoptimized
+                                            />
+                                        ) : (
+                                            property.owner.username.charAt(0)
+                                        )}
+                                    </div>
+                                    <span 
+                                        className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white ${
+                                            property.owner.is_online ? "bg-emerald-500" : "bg-gray-400"
+                                        }`}
+                                        title={property.owner.is_online ? "Online now" : "Offline"}
                                     />
-                                ) : (
-                                    property.owner.username.charAt(0)
-                                )}
-                            </div>
-                            <div>
-                                <p>
-                                    <Link className="hover:text-gray-600 text-lg font-semibold text-gray-900" href={`/user/${property.owner.id}`}>
-                                        {property.owner.username}
-                                    </Link>
-                                </p>
-                                <p className="text-sm text-gray-500">Property Owner</p>
-                            </div>
-                        </div>
-                        <div className="pt-5 border-t border-gray-200">
-                            <a 
-                                href={`mailto:${property.owner.email}`} 
-                                className="inline-flex items-center gap-3 text-gray-700 hover:text-blue-600 transition-colors group w-fit"
-                            >
-                                <div className="p-2 bg-white rounded-full shadow-sm border border-gray-200 group-hover:border-blue-200 group-hover:bg-blue-50 transition-colors">
-                                    <svg className="w-5 h-5 text-gray-500 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                                    </svg>
                                 </div>
-                                <span className="font-medium">{property.owner.email}</span>
-                            </a>
+                                <div>
+                                    <p>
+                                        <Link className="hover:text-gray-600 text-lg font-semibold text-gray-900" href={`/user/${property.owner.id}`}>
+                                            {property.owner.username}
+                                        </Link>
+                                    </p>
+                                    <p className="text-sm text-gray-500 flex items-center gap-1.5">
+                                        <span>Property Owner</span>
+                                        <span>•</span>
+                                        <span className={property.owner.is_online ? "text-emerald-600 font-medium" : "text-gray-400"}>
+                                            {property.owner.is_online ? "Online now" : "Offline"}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                            {isAuthenticated && (
+                                <button
+                                    onClick={handleMessageHost}
+                                    disabled={!property.owner.is_online || isStartingChat}
+                                    className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500 text-white font-semibold rounded-xl transition-colors shadow-sm text-sm flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                    </svg>
+                                    {isStartingChat 
+                                        ? "Opening chat..." 
+                                        : property.owner.is_online 
+                                            ? "Message Host" 
+                                            : "Host Offline"}
+                                </button>
+                            )}
                         </div>
+
+                        {chatError && (
+                            <p className="text-sm text-red-600 mb-4">{chatError}</p>
+                        )}
                     </div>
                     <div className="border-t border-gray-200 pt-8 mt-8">
                         <div className="flex items-center gap-3 mb-8">
