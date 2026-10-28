@@ -40,6 +40,7 @@ export default function Header() {
                     <div className="flex items-center gap-6">
                         <span className="font-medium text-blue-50">Welcome, <Link className="hover:text-blue-200 transition-colors font-medium" href={`/user/${user?.id}`}>{user?.username}</Link></span>
                         <Link className="hover:text-blue-200 transition-colors font-medium" href={"/profile"}>Personal Cabinet</Link>
+                        <Link className="hover:text-blue-200 transition-colors font-medium" href={"/messages"}>Chats</Link>
                         <button 
                             onClick={handleLogout} 
                             className="bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded-lg transition-colors text-sm font-semibold shadow-sm"
