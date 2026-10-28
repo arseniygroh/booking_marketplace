@@ -1,43 +1,50 @@
 import json
 import redis
-import redis.asyncio as aioredis
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.utils import timezone
 from .models import Conversation, Message
 
-sync_redis = redis.Redis(host='127.0.0.1', port=6379, db=0, decode_responses=True)
-async_redis = aioredis.from_url("redis://127.0.0.1:6379/0", decode_responses=True)
+redis_client = redis.Redis(
+    host="127.0.0.1",
+    port=6379,
+    db=0,
+    decode_responses=True,
+    socket_connect_timeout=5,
+    socket_timeout=5,
+)
+
 
 def is_user_online(user_id):
-    return sync_redis.scard(f"user:{user_id}:connections") > 0
+    try:
+        return redis_client.scard(f"user:{user_id}:connections") > 0
+    except redis.RedisError:
+        return False
 
 
 class PresenceAndNotificationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.user = self.scope.get("user")
 
-        if not self.user or not self.user.is_authenticated:
+        if not self.user or self.user.is_anonymous:
             await self.close()
             return
 
         self.user_group_name = f"notifications_user_{self.user.id}"
         self.redis_key = f"user:{self.user.id}:connections"
 
+    
+        await self.accept()
+        await self.add_connection()
+
         await self.channel_layer.group_add(
             self.user_group_name,
             self.channel_name
         )
 
-        await async_redis.sadd(self.redis_key, self.channel_name)
-        await async_redis.expire(self.redis_key, 3600)
-
-        await self.accept()
-
     async def disconnect(self, close_code):
-        if hasattr(self, "user") and self.user and self.user.is_authenticated:
-            await async_redis.srem(self.redis_key, self.channel_name)
-
+        if hasattr(self, "user") and self.user and not self.user.is_anonymous:
+            await self.remove_connection()
             await self.channel_layer.group_discard(
                 self.user_group_name,
                 self.channel_name
@@ -47,7 +54,7 @@ class PresenceAndNotificationConsumer(AsyncWebsocketConsumer):
         try:
             data = json.loads(text_data)
             if data.get("type") == "heartbeat":
-                await async_redis.expire(self.redis_key, 3600)
+                await self.refresh_connection()
                 await self.send(text_data=json.dumps({"type": "pong"}))
         except json.JSONDecodeError:
             pass
@@ -57,6 +64,20 @@ class PresenceAndNotificationConsumer(AsyncWebsocketConsumer):
             "type": "new_message_notification",
             "data": event["data"]
         }))
+
+
+    @database_sync_to_async
+    def add_connection(self):
+        redis_client.sadd(self.redis_key, self.channel_name)
+        redis_client.expire(self.redis_key, 3600)
+
+    @database_sync_to_async
+    def remove_connection(self):
+        redis_client.srem(self.redis_key, self.channel_name)
+
+    @database_sync_to_async
+    def refresh_connection(self):
+        redis_client.expire(self.redis_key, 3600)
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
