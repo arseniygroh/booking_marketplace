@@ -14,6 +14,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
 from .tasks import send_confirmation_email
 import re
+from .consumers import is_user_online
 
 User = get_user_model()
 
@@ -164,7 +165,8 @@ def get_property(request, id):
                 "username": property.owner.username,
                 "email": property.owner.email,
                 "id": property.owner.id,
-                "avatar": request.build_absolute_uri(property.owner.avatar.url) if property.owner.avatar else None
+                "avatar": request.build_absolute_uri(property.owner.avatar.url) if property.owner.avatar else None,
+                "is_online": is_user_online(property.owner.id)
             }
         }
         return JsonResponse(data)
