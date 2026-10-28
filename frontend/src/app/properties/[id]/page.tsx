@@ -33,6 +33,8 @@ export default function BookingCreationPage() {
     const params = useParams();
     const dispatch = useDispatch();
     const router = useRouter();
+    const [isStartingChat, setIsStartingChat] = useState(false);
+    const [chatError, setChatError] = useState<string | null>(null);
 
     
     useEffect(() => {
@@ -118,6 +120,35 @@ export default function BookingCreationPage() {
 
         } catch (err: any) {
             setBookingStatus({ loading: false, error: err.message, success: null });
+        }
+    };
+
+    const handleMessageHost = async () => {
+        if (!property) return;
+        setIsStartingChat(true);
+        setChatError(null);
+    
+        try {
+            const csrfToken = getCookie("csrftoken") || "";
+            const res = await fetch(`http://localhost:8000/properties/${property.id}/message-host/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrfToken,
+                },
+                credentials: "include",
+            });
+    
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.error || "Could not start conversation");
+            }
+    
+            router.push(`/messages/${data.conversation_id}`);
+        } catch (err: any) {
+            setChatError(err.message);
+        } finally {
+            setIsStartingChat(false);
         }
     };
 

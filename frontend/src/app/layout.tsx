@@ -4,6 +4,7 @@ import { StoreProvider } from "@/store/StoreProvider";
 import "./globals.css";
 import Header from "@/components/Header";
 import { SessionHydrator } from "@/store/SessionHydrator";
+import NotificationProvider from "@/components/NotificationProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,9 +30,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <StoreProvider>
           <SessionHydrator>
-            <div id="root-modal"></div>
-            <Header />
-            {children}
+            <NotificationProvider>
+              <div id="root-modal"></div>
+              <Header />
+              {children}
+            </NotificationProvider>
           </SessionHydrator>
         </StoreProvider>
       </body>
