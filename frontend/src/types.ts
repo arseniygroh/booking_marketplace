@@ -88,3 +88,12 @@ export interface Profile {
     bio: string | null;
     properties: Property[] | null;
 }
+
+export interface MessageNotification {
+    conversation_id: number;
+    property_title: string;
+    sender_id: number;
+    sender_username: string;
+    preview: string;
+    created_at: string;
+}
