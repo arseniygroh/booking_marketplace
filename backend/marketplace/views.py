@@ -7,8 +7,8 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Avg
-from .models import Property, Booking, PropertyImage, Amenity, Review, Profile
+from django.db.models import Avg, Q
+from .models import Property, Booking, PropertyImage, Amenity, Review, Profile, Conversation, Message
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
@@ -655,5 +655,143 @@ def edit_profile(request):
     profile.save()
 
     return JsonResponse({"status": "success", "message": "Profile updated successfully."}, status=200)
+
+@require_http_methods(["POST"])
+def message_host(request, property_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "You must be logged in to send messages"}, status=401)
+    
+    try:
+        property = Property.objects.select_related('owner').get(id=property_id)
+    except Property.DoesNotExist:
+        return JsonResponse({"error": "Property not found"}, status=404)
+
+    if request.user == property.owner:
+        return JsonResponse({"error": "You can't message yourself"}, status=400)
+    
+    conversation = Conversation.objects.filter(property=property, guest=request.user).first()
+    if conversation:
+        return JsonResponse({"conversation_id": conversation.id})
+    
+    if is_user_online(property.owner.id):
+        conversation = Conversation.objects.create(
+            property=property, 
+            host=property.owner, 
+            guest=request.user,
+        )
+        return JsonResponse({"conversation_id": conversation.id}, status=201)
+        
+    return JsonResponse({"error": "Host is currently offline"}, status=400)
+
+
+@require_http_methods(["GET"])
+def get_conversations(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "You must be logged in to view messages"}, status=401)
+
+    conversations = (
+        Conversation.objects
+        .filter(Q(guest=request.user) | Q(host=request.user))
+        .select_related('property', 'guest', 'host')
+        .prefetch_related('property__images', 'messages')
+    )
+    
+    data = []
+    for c in conversations:
+        participant = c.host if request.user == c.guest else c.guest
+        participant_info = {
+            "id": participant.id,
+            "username": participant.username,
+            "avatar": request.build_absolute_uri(participant.avatar.url) if participant.avatar else None,
+            "is_online": is_user_online(participant.id)
+        }
+        
+        all_images = list(c.property.images.all())
+        primary_img_obj = next((img for img in all_images if img.is_primary), all_images[0] if all_images else None)
+        primary_image_url = (
+            request.build_absolute_uri(primary_img_obj.image.url) 
+            if primary_img_obj and primary_img_obj.image else None
+        )
+
+        all_messages = list(c.messages.all())
+        last_msg = all_messages[-1] if all_messages else None
+        unread_count = 0
+
+        for m in all_messages:
+            if not m.is_read and m.sender_id != request.user.id:
+                unread_count = unread_count + 1
+
+
+        data.append({
+            "conversation_id": c.id,
+            "updated_at": c.updated_at.isoformat(),
+            "participant_info": participant_info,
+            "property": {
+                "id": c.property.id,
+                "title": c.property.title,
+                "primary_image": primary_image_url,
+            },
+            "preview_message": {
+                "content": last_msg.content,
+                "created_at": last_msg.created_at.isoformat(),
+                "sender_id": last_msg.sender_id,
+                "is_read": last_msg.is_read
+            } if last_msg else None,
+            "unread_count": unread_count
+        })
+        
+    return JsonResponse(data, safe=False)
+
+
+@require_http_methods(["GET"])
+def get_conversation_detail(request, conversation_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "You must be logged in to view this conversation"}, status=401)
+
+    try:
+        conversation = (
+            Conversation.objects
+            .select_related('property', 'guest', 'host')
+            .get(id=conversation_id)
+        )
+    except Conversation.DoesNotExist:
+        return JsonResponse({"error": "Conversation not found"}, status=404)
+
+    if request.user != conversation.guest and request.user != conversation.host:
+        return JsonResponse({"error": "You do not have permission to view this chat"}, status=403)
+
+    conversation.messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
+    participant = conversation.host if request.user == conversation.guest else conversation.guest
+    
+    messages_data = [
+        {
+            "id": msg.id,
+            "sender_id": msg.sender_id,
+            "content": msg.content,
+            "created_at": msg.created_at.isoformat(),
+            "is_read": msg.is_read,
+        }
+        for msg in conversation.messages.all()
+    ]
+
+    data = {
+        "conversation_id": conversation.id,
+        "property": {
+            "id": conversation.property.id,
+            "title": conversation.property.title,
+            "price": str(conversation.property.price),
+        },
+        "participant": {
+            "id": participant.id,
+            "username": participant.username,
+            "avatar": request.build_absolute_uri(participant.avatar.url) if participant.avatar else None,
+            "is_online": is_user_online(participant.id),
+        },
+        "messages": messages_data
+    }
+
+    return JsonResponse(data)
+
+
 
 

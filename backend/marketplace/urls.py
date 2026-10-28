@@ -22,4 +22,7 @@ urlpatterns = [
     path('bookings/<int:booking_id>/review/', views.submit_review),
     path('profile/<int:user_id>/', views.get_user_profile),
     path('profile/edit/', views.edit_profile),
+    path('properties/<int:property_id>/message-host/', views.message_host),
+    path('conversations/', views.get_conversations),
+    path('conversations/<int:conversation_id>/', views.get_conversation_detail),
 ]
