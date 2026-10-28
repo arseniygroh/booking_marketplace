@@ -1,6 +1,6 @@
 # Booking Marketplace
 
-A production-grade, full-stack booking platform built with a decoupled architecture. The application allows users to browse available properties, securely manage their authentication sessions, create property reservations, and track their upcoming trips through a personalized dashboard. 
+A full-stack booking platform built with a decoupled architecture. The application allows users to browse available properties, securely manage their authentication sessions, create property reservations, and track their upcoming trips through a personalized dashboard. Also guests are allowed to start conversation with properties owners if owners are currently online.
 
 ## Architecture & Tech Stack
 
